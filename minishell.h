@@ -25,8 +25,8 @@
 #include <time.h>
 #include <sys/wait.h>
 #include <limits.h>
-
-
+#include <signal.h>
+#include <termios.h>
 
 #define BUFFER_SIZE 1
 // Our environment struct
@@ -109,6 +109,11 @@ t_env *execute_builtin(t_env **envir, char **args, int *last_exit_status, t_expo
 void modify_args(char **args, t_env *envir, int *last_exit_status);
 
 bool is_builtin(char *command);
+
+//signals
+void sigint_handler(int sig);
+void sigquit_handler(int sig);
+void configure_terminal_behavior();
 
 //////parse & execute
 
