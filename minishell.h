@@ -90,11 +90,12 @@ size_t	ft_strlen(const char *s);
 char	*ft_strdup(const char *s1);
 size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize);
 char	*ft_substr(char const *s, unsigned int start, size_t len);
-
+char    *ft_itoa(int n);
 int     wordcount(char *str, char sep);
 char	**getwords(char **arr, char *s, char c, int word);
 char	**ft_split(char const *s, char c);
 char 	*getcopyenv(char *str, t_env **envir);
+int	ft_isalnum(int c);
 
 //cd utils
 void update_env_for_cd(t_env **env, char *variable, char *value);
