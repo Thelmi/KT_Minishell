@@ -12,13 +12,6 @@
 
 #include "../minishell.h" 
 
-int	ft_isalnum(int c)
-{
-	if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))
-		return (1);
-	return (0);
-}
-
 static int new_len(char *arg, t_env *envir, bool read_backslash){
     int len = 0;
     int i = 0; 
@@ -48,7 +41,7 @@ static int new_len(char *arg, t_env *envir, bool read_backslash){
     return len;
 }
 
-static char *no_quotes(char *arg, t_env *envir, bool read_backslash){
+static char *no_quotes(char *arg, t_env *envir, bool read_backslash, int *last_exit_status){
     int i;
     int j;
     int var_len;
@@ -61,7 +54,12 @@ static char *no_quotes(char *arg, t_env *envir, bool read_backslash){
         return NULL;
     }
     while (arg[i]) {
-        if (arg[i] == '$' && ft_isalnum(arg[i+1])){
+        if(arg[i] == '$' && arg[i+1]=='?'){
+            ft_strcat(res, ft_itoa(*last_exit_status));
+            j = ft_strlen(res);
+            i+=2;
+        }
+        else if (arg[i] == '$' && ft_isalnum(arg[i+1])){
             var_len = 0;
             i++;
             while (arg[i] && (ft_isalnum(arg[i]) || arg[i]=='_')) {
@@ -90,13 +88,13 @@ static char *no_quotes(char *arg, t_env *envir, bool read_backslash){
 }
 
 
-static char *double_quotes(char *arg, t_env *envir, bool read_backslash){
+static char *double_quotes(char *arg, t_env *envir, bool read_backslash, int *last_exit_status){
     char *res;
     int len;
     len=ft_strlen(arg);
     arg[len-1]='\0';
     arg=arg+1;
-    res=no_quotes(arg, envir, read_backslash);
+    res=no_quotes(arg, envir, read_backslash, last_exit_status);
     return res;
 }
 
@@ -117,7 +115,7 @@ static char *single_quotes(char *arg){
     return res;
 }
 
-void modify_args(char **args, t_env *envir){
+void modify_args(char **args, t_env *envir, int *last_exit_status){
     int i;
     char *tmp;
     bool read_backslash;
@@ -128,9 +126,9 @@ void modify_args(char **args, t_env *envir){
             tmp = single_quotes(args[i]);
         }else if(args[i][0]=='"' && args[i][ft_strlen(args[i])-1]=='"'){
             read_backslash=true;
-            tmp = double_quotes(args[i], envir, read_backslash);
+            tmp = double_quotes(args[i], envir, read_backslash, last_exit_status);
         }else {
-            tmp = no_quotes(args[i], envir, read_backslash); 
+            tmp = no_quotes(args[i], envir, read_backslash, last_exit_status); 
         }
         // free(args[i]);
         args[i] = tmp;
