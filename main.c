@@ -29,7 +29,8 @@ int main(int ac, char **av, char **ev){
     {
         command = readline("minishell$ ");
         if (command == NULL) {
-            break;
+		write(1, "exit\n", 5);
+		break;
         }
         if (*command) {
             add_history(command);
