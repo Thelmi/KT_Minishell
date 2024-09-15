@@ -69,6 +69,8 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
   // t_heredoc *input;
 
   struct cmd *cmd = main.cmd;
+  if (cmd == NULL)
+    return;
   if (!input)
     input = NULL;
   // tmp2 = main.heredoc;
@@ -138,8 +140,6 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
   // printf("%s", input);
   // printf("Here\n");
   // print_tree(cmd);
-	if (cmd == NULL)
-		return ;
 	if (cmd->type == EXEC) 
 	{
     // printf("Here2\n");
@@ -253,6 +253,7 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 		if (ecmd->argv[0] == NULL)
 		{
 			printf("bash: syntax error near unexpected token `|\n");
+			*last_exit_status = 2;
 			return ;
 		}
 		if (fork1() == 0) 
@@ -261,11 +262,12 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 			if (dup2(p[1], STDOUT_FILENO) < 0)
 				panic("dup2 failed");
 			close(p[1]);
-      main.cmd = pcmd->left;
+            main.cmd = pcmd->left;
 			runcmd(main, ev, envir, exp, last_exit_status);
-			exit(0);
+			exit(*last_exit_status);
 		}
-		wait(NULL); 
+		wait(&status);
+		*last_exit_status = WEXITSTATUS(status);
 		if (fork1() == 0) 
 		{
 			close(p[1]);
@@ -314,18 +316,19 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 					free (read);
 					read = NULL;
 				}
-        runcmd(parsecmd(read, last_exit_status), ev, envir, exp, last_exit_status);
-			  exit(0);
+                runcmd(parsecmd(read, last_exit_status), ev, envir, exp, last_exit_status);
+			    exit(0);
 				}
 			}
       // print_tree(pcmd->right);
-      main.cmd = pcmd->right;
+            main.cmd = pcmd->right;
 			runcmd(main, ev, envir, exp, last_exit_status);
-			exit(0);
+			exit(*last_exit_status);
 		}
 		close(p[0]);
 		close(p[1]);
-		wait(NULL);
+		wait(&status);
+	    *last_exit_status = WEXITSTATUS(status);
 	}
 	return ;
 }
@@ -499,14 +502,11 @@ struct cmd* parsepipe(char **ps, char *es, struct heredoc **heredoc, int *last_e
 {
   struct cmd *cmd;
   
-  // printf("x1\n");
   cmd = parseexec(ps, es, heredoc, last_exit_status);
-  // printf("x2\n");
   if(peek(ps, es, "|")){
     gettoken(ps, es, 0, 0);
     cmd = pipecmd(cmd, parsepipe(ps, es, heredoc, last_exit_status));
   }
-  // printf("x3\n");
   return cmd;
 }
 
@@ -623,83 +623,22 @@ t_main parsecmd(char *s, int *last_exit_status)
 {
     char *es;
     struct cmd *cmd;
-    // struct heredoc *heredoc;
-    // struct heredoc *tmp;
-    // char *read = NULL;
-    // char *tmp2 = NULL;
-    // char *tmp3 = NULL;
-    // int i;
     t_main main; 
     main.heredoc = NULL;
-    // heredoc = NULL;
-    // main = NULL;
     cmd = NULL;
-    // main->cmd = NULL;
-    // main->heredoc = NULL;
-    es = s + strlen(s);
-    // printf("hello3\n");
-    cmd = parsepipe(&s, es, &(main.heredoc), last_exit_status);
-    // printf("hello4\n");
-    peek(&s, es, "");
 
+    es = s + strlen(s);
+    cmd = parsepipe(&s, es, &(main.heredoc), last_exit_status);
+    peek(&s, es, "");
     if (s != es) {
         write(2, "minishell: syntax error: unexpected token ", 42);
 		write(2, s, strlen(s));
     	*last_exit_status = 2;
 		return main; //double check this
     }
-  // printf("hello2\n");
     nulterminate(cmd);
-    // print_tree(cmd);
-    //remove_quotes(cmd);
-    // printf("hello\n");
     main.cmd = cmd;
-    // printf("hello5\n");
-    // main->heredoc = heredoc;
     return (main); //
-    // tmp = heredoc;
-    // while (tmp) {
-    //     i = 0;
-    //     while (tmp->argv[i] && tmp->argv[i] != ' ')
-		// {
-    //         i++;
-    //     }
-    //     tmp2 = ft_substr(tmp->argv, 0, i);
-    //     if (tmp2 && tmp2[0] == '\"' && tmp2[ft_strlen(tmp2) - 1] == '\"')
-    //     {
-    //       tmp3 = ft_substr(tmp->argv, 1, ft_strlen(tmp2) - 2);
-    //       free (tmp2);
-    //       tmp2 = tmp3;
-    //     } 
-    //     if (tmp2 && tmp2[0] == '\'' && tmp2[ft_strlen(tmp2) - 1] == '\'')
-    //     {
-    //       tmp3 = ft_substr(tmp->argv, 1, ft_strlen(tmp2) - 2);
-    //       free (tmp2);
-    //       tmp2 = tmp3;
-    //     } 
-		//  if (tmp2 == NULL) 
-		//  {
-    //         perror("Error allocating memory for heredoc delimiter");
-    //         *last_exit_status = 1; // General error
-    //         return NULL;
-    //      }
-    //     while ((read = readline("> ")) != NULL) {
-    //         if (num_strncmp(read, tmp2) == 0) {
-    //             free(read); // Free the input string
-    //             break;
-    //         }
-    //         free(read);
-    //     }
-    //     if (read == NULL) 
-		// {
-		// 	free(tmp2);
-		// 	break;
-		// }
-    //     free(tmp2);
-    //     tmp = tmp->next;
-    // }
-
-    // return cmd;
 }
 
 
