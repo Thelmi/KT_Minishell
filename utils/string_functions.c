@@ -13,7 +13,52 @@
 #include "../minishell.h"
 
 // functions from libft... temperorally, until we upload a libft to our minishell project 
+int	ft_isalnum(int c)
+{
+	if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))
+		return (1);
+	return (0);
+}
 
+static int  ft_num_len(int n)
+{
+    int len;
+
+    len = (n <= 0) ? 1 : 0;
+    while (n != 0)
+    {
+        n /= 10;
+        len++;
+    }
+    return (len);
+}
+
+char    *ft_itoa(int n)
+{
+    char    *str;
+    int     len;
+    long    num;
+
+    num = n;
+    len = ft_num_len(n);
+    str = (char *)malloc(sizeof(char) * (len + 1));
+    if (!str)
+        return (NULL);
+    str[len--] = '\0';
+    if (num == 0)
+        str[0] = '0';
+    if (num < 0)
+    {
+        str[0] = '-';
+        num = -num;
+    }
+    while (num > 0)
+    {
+        str[len--] = (num % 10) + '0';
+        num /= 10;
+    }
+    return (str);
+}
 
 char *ft_strcat(char *dest, const char *src) {
     int i = 0;
