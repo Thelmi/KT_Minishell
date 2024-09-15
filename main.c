@@ -19,7 +19,9 @@ int main(int ac, char **av, char **ev){
     t_env *envir;
 	t_export *exp;
     int last_exit_status;
-
+    configure_terminal_behavior();
+    signal(SIGINT, sigint_handler);
+    signal(SIGQUIT, sigquit_handler);
 	last_exit_status = 0; 
     envir = storing_env(ev);
 	exp = storing_export(ev);
