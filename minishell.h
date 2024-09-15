@@ -105,7 +105,7 @@ bool is_only_n(const char *str);
 //execution
 t_env *execute_builtin(t_env **envir, char **args, int *last_exit_status, t_export **exp);
 //t_env *execute_command(char *command, t_env **envir, int *last_exit_status, char** ev);
-void modify_args(char **args, t_env *envir);
+void modify_args(char **args, t_env *envir, int *last_exit_status);
 
 bool is_builtin(char *command);
 
