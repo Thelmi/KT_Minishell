@@ -32,7 +32,7 @@ t_env *execute_builtin(t_env **envir, char **args, int *last_exit_status, t_expo
     // printf("%s\n", args[1]);
     // printf("%s\n", args[2]);
 	count = count_args(args);
-	 modify_args(args, *envir);
+	 modify_args(args, *envir, last_exit_status);
 
 	 
 	if (ft_strcmp("echo", args[0])==true){
