@@ -1,6 +1,7 @@
 
 #include "../minishell.h"
 
+
 void panic(char *s)
 {
   printf("%s\n", s);
@@ -52,7 +53,7 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 	struct execcmd *ecmd;
 	struct pipecmd *pcmd;
 	struct redircmd *rcmd;
-	int saved_stdin = dup(STDIN_FILENO);
+	int saved_stdin = dup(STDIN_FILENO); //close all fds
 	int saved_stdout = dup(STDOUT_FILENO);
 	int status = 0;
 	int pipe_fd;
@@ -72,8 +73,9 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
   if (cmd == NULL)
     return;
   if (!input)
+  {
     input = NULL;
-  // tmp2 = main.heredoc;
+  }
     while (main.heredoc) {
         i = 0;
         while (main.heredoc->argv[i] && main.heredoc->argv[i] != ' ')
@@ -101,34 +103,26 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       }
         while ((read = readline("> ")) != NULL) {
           if (num_strncmp(read, tmp2) == 0) {
-              free(read); // Free the input string
-              //free(tmp3) properly
-              // free(tmp2);
+              free(read);
               break;
           }
           if (main.heredoc->next == NULL)
           {
             tmp_input = ft_strjoin(read, "\n");
-            // printf("|%s|", tmp_input);
-            // printf("|%s|", tmp_input);
-            // printf("|%s|", read);
-            // free(input);
             if (!input)
               tmp_input2 = tmp_input;
             else
             {
               tmp_input2 = ft_strjoin(input, tmp_input);
-              // printf("|%s|", tmp_input2);
               free(input);
             }
             if (input)
               free(tmp_input);
             input = tmp_input2;
-            // printf("|%s|", input);
           }
           free(read);
         }
-        if (read == NULL) 
+        if (read == NULL)  //check if this is important
         {
           free(tmp2);
           break;
@@ -136,64 +130,39 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
         free(tmp2);
         main.heredoc = main.heredoc->next;
     }
-  // write (1, input, ft_strlen(input));
-  // printf("%s", input);
-  // printf("Here\n");
-  // print_tree(cmd);
+
 	if (cmd->type == EXEC) 
 	{
-    // printf("Here2\n");
 		ecmd = (struct execcmd*)cmd;
 		if (ecmd->argv[0] == NULL)
 		{
 			*last_exit_status = 1;
 			return ; 
 		}
-	if (is_builtin(ecmd->argv[0])==true)
+	if (is_builtin(ecmd->argv[0])==true) //free as a builtin, only the execcmd
 	{
 		execute_builtin(envir , ecmd->argv, last_exit_status, exp);
 		return ;
 	}
   if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && input)
   {
-    // dup2(saved_stdin, 0);
-    // write (1, "XXXXXX\n", 7);
-    // printf("%s", input);
-    // return ;
     write (1, input, ft_strlen(input));
     if (input)
       free (input);
     input = NULL;
     return ;
   }
+  if (input)
+      free (input);
+    input = NULL;
 	if (fork() == 0)
 	{
-    // printf("Here3\n");
 		remove_quotes(cmd);
-        // printf("%s|\n", ecmd->argv[0]);
-        // printf("%s|\n", ecmd->argv[1]);
-        // write (1, "yyyyyy\n", 7);
-        // printf("m1%s|\n", ecmd->argv[0]);
-        // printf("m2%s|\n", ecmd->argv[1]);
-        // printf("m3%s|\n", input);
-        // printf("%d\n", ft_strcmp(ecmd->argv[0], "cat"));
-                    // if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && input)
-                    // {
-                    //   // dup2(saved_stdin, 0);
-                    //   // write (1, "XXXXXX\n", 7);
-                    //   // printf("%s", input);
-                    //   // return ;
-                    //   write (1, input, ft_strlen(input));
-                    //   if (input)
-                    //     free (input);
-                    //   input = NULL;
-                    //   exit(0); // return ??
-                    // }
 		if (execve(ecmd->argv[0], ecmd->argv, ev) == -1)
 			execve(find_path(ecmd->argv[0], ev), ecmd->argv, ev); //you should free properly, make sure strjoin is not leaking
 		perror("execve failed"); // change it...
-		// printf("bro\n");
 		*last_exit_status = 127;
+    //free here if there is an error
 		exit(127);
 	}
 	else 
@@ -206,7 +175,6 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 	else if (cmd->type == REDIR) 
 	{
 		rcmd = (struct redircmd*)cmd;
-    // printf("%s\n", rcmd->file);
     if (rcmd->file && !((rcmd->file[0] == '\"' || rcmd->file[0] == '\'') && rcmd->file[1] == '\0'))
     {
       if (rcmd->file && rcmd->file[0] == '\"' && rcmd->file[ft_strlen(rcmd->file) - 1] == '\"')
@@ -214,17 +182,17 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
           tmp = ft_substr(rcmd->file, 1, ft_strlen(rcmd->file) - 2);
           // if ()
           // free (rcmd->file);
-          rcmd->file = tmp;
+          rcmd->file = tmp; //we need to free the file name after using it
         } 
         if (rcmd->file && rcmd->file[0] == '\'' && rcmd->file[ft_strlen(rcmd->file) - 1] == '\'')
         {
           tmp = ft_substr(rcmd->file, 1, ft_strlen(rcmd->file) - 2);
           // if ()
           // free (rcmd->file);
-          rcmd->file = tmp;
+          rcmd->file = tmp; //we need to free the file name after using it
         } 
-        // printf("%s\n", rcmd->file);
       int fd = open(rcmd->file, rcmd->mode, 0644);
+      free(tmp); //the same as free(rcmd->file);
       if (fd < 0) {
         perror("open failed");
         *last_exit_status = 1;
@@ -239,7 +207,7 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       close(fd);
     }
     main.cmd = rcmd->cmd;
-		runcmd(main, ev, envir, exp, last_exit_status);
+		runcmd(main, ev, envir, exp, last_exit_status); // WARNING!!! make sure everything is free here, this is a recursive call WARNING!!!
 		dup2(saved_stdout, 1);
 		dup2(saved_stdin, 0);
 		return;
@@ -280,9 +248,6 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 				if (ecmd->argv[0] == NULL)
 				{
 				char *read = NULL;
-				// char *tmp;
-				// char **tmp2;
-				// int i = 0;
 
 				pipe_fd = dup(0);
 				dup2(saved_stdin, 0);
@@ -292,37 +257,18 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 					read = get_next_line(0);
 					if (read && read[0] != '\n')
 					{
-					// tmp = read;
-					// read = ft_substr(tmp, 0, ft_strlen(tmp) - 1);
-					// tmp2 = ft_split(read, ' '); //free properly
-					// while (tmp2[i])
-					// {
-					// 	if (tmp2[i][0] == '\"' && tmp2[i][ft_strlen(tmp2[i]) - 1] == '\"')
-					// 	{
-					// 	tmp2[i] = ft_substr(tmp2[i], 1, ft_strlen(tmp2[i]) - 2);
-					// 	}
-					// 	if (tmp2[i][0] == '\'' && tmp2[i][ft_strlen(tmp2[i]) - 1] == '\'')
-					// 	{
-					// 	tmp2[i] = ft_substr(tmp2[i], 1, ft_strlen(tmp2[i]) - 2);
-					// 	}
-					// 	ecmd->argv[i] = tmp2[i];
-					// 	i++;
-					// }
-					// free (tmp);
-					// free(read);
 					dup2(pipe_fd, 0);
 					break ;
 					}
 					free (read);
 					read = NULL;
 				}
-                runcmd(parsecmd(read, last_exit_status), ev, envir, exp, last_exit_status);
+                runcmd(parsecmd(read, last_exit_status), ev, envir, exp, last_exit_status); //WARNING!!! recursive call
 			    exit(0);
 				}
 			}
-      // print_tree(pcmd->right);
             main.cmd = pcmd->right;
-			runcmd(main, ev, envir, exp, last_exit_status);
+			runcmd(main, ev, envir, exp, last_exit_status); //WARNING!!! recursive call
 			exit(*last_exit_status);
 		}
 		close(p[0]);
@@ -628,7 +574,7 @@ t_main parsecmd(char *s, int *last_exit_status)
     cmd = NULL;
 
     es = s + strlen(s);
-    cmd = parsepipe(&s, es, &(main.heredoc), last_exit_status);
+    cmd = parsepipe(&s, es, &(main.heredoc), last_exit_status); //free tree, heredoc //free here if there is an error, otherwise, free in runcmd
     peek(&s, es, "");
     if (s != es) {
         write(2, "minishell: syntax error: unexpected token ", 42);
@@ -636,9 +582,9 @@ t_main parsecmd(char *s, int *last_exit_status)
     	*last_exit_status = 2;
 		return main; //double check this
     }
-    nulterminate(cmd);
+    nulterminate(cmd); //free argv in the tree properly. Free argv first and then the nodes in the tree
     main.cmd = cmd;
-    return (main); //
+    return (main);
 }
 
 

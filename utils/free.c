@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: mrhelmy <mrhelmy@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 16:17:37 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/10 20:54:35 by thelmy           ###   ########.fr       */
+/*   Updated: 2024/09/15 21:58:48 by mrhelmy          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,11 @@ void free_env(t_env *env)
 	tmp = env;
 	while (tmp != NULL)
 	{
-		tmp = env->next;
-		free(env->variable);
-		free(env->value);
-		free(env);
 		env = tmp;
+
+
+
+		free(env->variable);		free(env->value);		free(env);		tmp = env->next;
 	}
 }
 
