@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 14:58:51 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 18:44:14 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/17 21:17:27 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,11 @@ t_env				*execute_builtin(t_env **envir, char **args,
 void				modify_args(char **args, t_env *envir,
 						int *last_exit_status);
 bool				is_builtin(char *command);
-
-
+char				*allocate_result(char *arg, t_env *envir, int *last_exit_status);
+int 				handle_exit_status(char *res, int j, int *last_exit_status);
+int					handle_var_expansion(char *res, char *arg, int *i, t_env *envir);
+int					handle_exit_status_len(int *last_exit_status);
+int					handle_var_len(char *arg, int *i, t_env *envir);
 // signals
 void				sigint_handler(int sig);
 void				sigquit_handler(int sig);
