@@ -18,16 +18,16 @@ void	env(t_env *env, int *last_exit_status)
 
 	if (!env)
 	{
-		write(2 , "Environment is empty or not initialized.\n", 41);
+		write(2, "Environment is empty or not initialized.\n", 41);
 		*last_exit_status = 1;
 		return ;
 	}
 	tmp = env;
 	while (tmp != NULL)
 	{
-		printf ("%s", tmp->variable);
-		printf ("=");
-		printf ("%s\n", tmp->value);
+		printf("%s", tmp->variable);
+		printf("=");
+		printf("%s\n", tmp->value);
 		tmp = tmp->next;
 	}
 }
