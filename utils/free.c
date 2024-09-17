@@ -3,35 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrhelmy <mrhelmy@student.42.fr>            +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 16:17:37 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/15 21:58:48 by mrhelmy          ###   ########.fr       */
+/*   Updated: 2024/09/17 18:48:56 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// our freeing functions
 #include "../minishell.h"
 
-void free_env(t_env *env)
+void	free_env(t_env *env)
 {
-	t_env *tmp;
-	
+	t_env	*tmp;
+
 	tmp = env;
 	while (tmp != NULL)
 	{
 		env = tmp;
-
-
-
-		free(env->variable);		free(env->value);		free(env);		tmp = env->next;
+		free(env->variable);
+		free(env->value);
+		free(env);
+		tmp = env->next;
 	}
 }
 
-void free_export(t_export *export)
+void	free_export(t_export *export)
 {
-	t_export *tmp;
-	
+	t_export	*tmp;
+
 	tmp = export;
 	while (tmp != NULL)
 	{
@@ -43,12 +42,12 @@ void free_export(t_export *export)
 	}
 }
 
-void free_env_node(t_env *node)
+void	free_env_node(t_env *node)
 {
-    if (node)
-    {
-        free(node->variable);
-        free(node->value);
-        free(node);
-    }
+	if (node)
+	{
+		free(node->variable);
+		free(node->value);
+		free(node);
+	}
 }
