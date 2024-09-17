@@ -3,16 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   string_functions.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mrhelmy <mrhelmy@student.42.fr>            +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 16:20:03 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/14 12:18:12 by mrhelmy          ###   ########.fr       */
+/*   Updated: 2024/09/17 18:51:41 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-// functions from libft... temperorally, until we upload a libft to our minishell project 
+int	num_strncmp(char *s1, char *s2)
+{
+	int	i;
+
+	i = 0;
+	while (s1[i] && s2[i] && s1[i] == s2[i])
+		i++;
+	return (s1[i] - s2[i]);
+}
+
 int	ft_isalnum(int c)
 {
 	if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))
@@ -20,98 +29,96 @@ int	ft_isalnum(int c)
 	return (0);
 }
 
-static int  ft_num_len(int n)
+static int	ft_num_len(int n)
 {
-    int len;
+	int	len;
 
-    len = (n <= 0) ? 1 : 0;
-    while (n != 0)
-    {
-        n /= 10;
-        len++;
-    }
-    return (len);
+	len = (n <= 0) ? 1 : 0;
+	while (n != 0)
+	{
+		n /= 10;
+		len++;
+	}
+	return (len);
 }
 
-char    *ft_itoa(int n)
+char	*ft_itoa(int n)
 {
-    char    *str;
-    int     len;
-    long    num;
+	char	*str;
+	int		len;
+	long	num;
 
-    num = n;
-    len = ft_num_len(n);
-    str = (char *)malloc(sizeof(char) * (len + 1));
-    if (!str)
-        return (NULL);
-    str[len--] = '\0';
-    if (num == 0)
-        str[0] = '0';
-    if (num < 0)
-    {
-        str[0] = '-';
-        num = -num;
-    }
-    while (num > 0)
-    {
-        str[len--] = (num % 10) + '0';
-        num /= 10;
-    }
-    return (str);
+	num = n;
+	len = ft_num_len(n);
+	str = (char *)malloc(sizeof(char) * (len + 1));
+	if (!str)
+		return (NULL);
+	str[len--] = '\0';
+	if (num == 0)
+		str[0] = '0';
+	if (num < 0)
+	{
+		str[0] = '-';
+		num = -num;
+	}
+	while (num > 0)
+	{
+		str[len--] = (num % 10) + '0';
+		num /= 10;
+	}
+	return (str);
 }
 
-char *ft_strcat(char *dest, const char *src) {
-    int i = 0;
-    int j = 0;
+char	*ft_strcat(char *dest, const char *src)
+{
+	int	i;
+	int	j;
 
-    while (dest[i] != '\0') {
-        i++;
-    }
-
-    while (src[j] != '\0') {
-        dest[i] = src[j];
-        i++;
-        j++;
-    }
-
-    dest[i] = '\0';
-
-    return dest;
+	i = 0;
+	j = 0;
+	while (dest[i] != '\0')
+	{
+		i++;
+	}
+	while (src[j] != '\0')
+	{
+		dest[i] = src[j];
+		i++;
+		j++;
+	}
+	dest[i] = '\0';
+	return (dest);
 }
 
-
-struct cmd* print_tree(struct cmd *cmd)
+struct cmd	*print_tree(struct cmd *cmd)
 {
-  struct execcmd *ecmd;
-  struct pipecmd *pcmd;
-  struct redircmd *rcmd;
+	struct execcmd	*ecmd;
+	struct pipecmd	*pcmd;
+	struct redircmd	*rcmd;
 
-  if (cmd == 0)
-    return 0;
-  if (cmd->type == EXEC) {
-    ecmd = (struct execcmd*)cmd;
-	printf("%s\n", ecmd->argv[0]);
-  if (ecmd->argv[1])
-    printf("argv[1] : %s\n", ecmd->argv[1]);
-    // i = 0;
-    // while (ecmd->argv[i]) {
-    //   *ecmd->eargv[i] = 0;
-    //   i++;
-    // }
-  }
-  else if (cmd->type == REDIR) {
-    rcmd = (struct redircmd*)cmd;
-	printf("redirect %d\n", rcmd->type);
-    print_tree(rcmd->cmd);
-    // *rcmd->efile = 0;
-  }
-  else if (cmd->type == PIPE) {
-	printf("|\n");
-    pcmd = (struct pipecmd*)cmd;
-    print_tree(pcmd->left);
-    print_tree(pcmd->right);
-  }
-  return cmd;
+	if (cmd == 0)
+		return (0);
+	if (cmd->type == EXEC)
+	{
+		ecmd = (struct execcmd *)cmd;
+		printf("%s\n", ecmd->argv[0]);
+		if (ecmd->argv[1])
+			printf("argv[1] : %s\n", ecmd->argv[1]);
+	}
+	else if (cmd->type == REDIR)
+	{
+		rcmd = (struct redircmd *)cmd;
+		printf("redirect %d\n", rcmd->type);
+		print_tree(rcmd->cmd);
+	}
+	else if (cmd->type == PIPE)
+	{
+		printf("|\n");
+		pcmd = (struct pipecmd *)cmd;
+		print_tree(pcmd->left);
+		print_tree(pcmd->right);
+	}
+	return (cmd);
 }
 
 char	*ft_strjoin(char const *s1, char const *s2)
@@ -142,7 +149,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	return (tab);
 }
 
-char	*ft_strnstr(const char	*big, const char *little, size_t len)
+char	*ft_strnstr(const char *big, const char *little, size_t len)
 {
 	size_t	i;
 	size_t	j;
@@ -258,8 +265,8 @@ int	wordcount(char *str, char sep)
 		return (0);
 	while (str[i])
 	{
-		if ((str[i] == sep && str[i - 1] != sep)
-			|| (str[i] != sep && str[i + 1] == '\0'))
+		if ((str[i] == sep && str[i - 1] != sep) || (str[i] != sep && str[i
+				+ 1] == '\0'))
 			word++;
 		i++;
 	}
