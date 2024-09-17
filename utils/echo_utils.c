@@ -12,7 +12,7 @@
 
 #include "../minishell.h"
 
-bool is_only_n(const char *str)
+bool	is_only_n(const char *str)
 {
 	while (*str)
 	{
