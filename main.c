@@ -34,8 +34,7 @@ int main(int ac, char **av, char **ev){
         }
         if (*command) {
             add_history(command);
-            //envir = execute_command(command, &envir, &last_exit_status, ev);
-			runcmd(parsecmd(command, &last_exit_status), ev, &envir, &exp, &last_exit_status);
+	    runcmd(parsecmd(command, &last_exit_status), ev, &envir, &exp, &last_exit_status);
         }
         free(command);
     }
