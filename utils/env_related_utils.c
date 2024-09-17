@@ -3,26 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   env_related_utils.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/18 21:31:26 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/10 20:08:47 by thelmy           ###   ########.fr       */
+/*   Updated: 2024/09/17 18:48:41 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-char *getcopyenv(char *str, t_env **envir){
-    t_env *tmp;
-		
+char	*getcopyenv(char *str, t_env **envir)
+{
+	t_env	*tmp;
+
 	tmp = *envir;
-    while (tmp != NULL) {
-        if (ft_strcmp(tmp->variable, str) == true) {  // Check for equality explicitly
-            return tmp->value;  // Return the value if found
-        }
-        tmp = tmp->next;  // Move to the next node
-    }
-    return NULL;
+	while (tmp != NULL)
+	{
+		if (ft_strcmp(tmp->variable, str) == true)
+		{                  
+			return (tmp->value);
+		}
+		tmp = tmp->next;
+	}
+	return (NULL);
 }
 
 char	*substr_after_char(char *str, char c)
@@ -99,8 +102,11 @@ t_env	*storing_env(char **ev)
 		return (NULL);
 	env = create_env_nodes(substr_before_char(ev[0], '='),
 			substr_after_char(ev[0], '='));
-	if (!env)
+	if (!env || !env->variable || !env->value)
+	{
+		free_env(env);
 		return (NULL);
+	}
 	newnode = NULL;
 	tmp = env;
 	i = 1;
@@ -108,9 +114,9 @@ t_env	*storing_env(char **ev)
 	{
 		newnode = create_env_nodes(substr_before_char(ev[i], '='),
 				substr_after_char(ev[i], '='));
-		if (!newnode)
+		if (!newnode || !newnode->variable || !newnode->value)
 			return (free_env(env), NULL);
-		tmp ->next = newnode;
+		tmp->next = newnode;
 		tmp = tmp->next;
 		i++;
 	}
