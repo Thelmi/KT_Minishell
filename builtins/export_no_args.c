@@ -12,11 +12,11 @@
 
 #include "../minishell.h"
 
-int listsize(t_export *export)
+int	listsize(t_export *export)
 {
-	int count;
-	t_export *tmp;
-	
+	int			count;
+	t_export	*tmp;
+
 	count = 0;
 	tmp = export;
 	while (tmp != NULL)
@@ -27,74 +27,75 @@ int listsize(t_export *export)
 	return (count);
 }
 
-void sort_array(t_export **export_arr, int count)
+void	sort_array(t_export **export_arr, int count)
 {
-    int i;
-    int j;
-    t_export *tmp;
+	int			i;
+	int			j;
+	t_export	*tmp;
 
-    i = 0;
-    j = 0;
-    while (i < count - 1)
-    {
-        j = i + 1;
-        while (j < count)
-        {
-            if (num_strncmp(export_arr[i]->variable, export_arr[j]->variable) > 0)
-            {
-                tmp = export_arr[i];
-                export_arr[i] = export_arr[j];
-                export_arr[j] = tmp;
-            }
-            j++;
-        } 
-        i++;
-    }
+	i = 0;
+	j = 0;
+	while (i < count - 1)
+	{
+		j = i + 1;
+		while (j < count)
+		{
+			if (num_strncmp(export_arr[i]->variable,
+					export_arr[j]->variable) > 0)
+			{
+				tmp = export_arr[i];
+				export_arr[i] = export_arr[j];
+				export_arr[j] = tmp;
+			}
+			j++;
+		}
+		i++;
+	}
 }
 
-void printing_export(t_export **export_arr, int export_count)
+void	printing_export(t_export **export_arr, int export_count)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i < export_count)
 	{
 		printf("declare -x %s", export_arr[i]->variable);
-        if (export_arr[i]->value)
-            printf("=\"%s\"", export_arr[i]->value);
-        else
-            printf("=\"\"");
-        printf("\n");
-        i++;
+		if (export_arr[i]->value)
+			printf("=\"%s\"", export_arr[i]->value);
+		else
+			printf("=\"\"");
+		printf("\n");
+		i++;
 	}
 }
-void export_no_arg(t_export *export, int *last_exit_status)
+void	export_no_arg(t_export *export, int *last_exit_status)
 {
-	t_export *tmp;
-	t_export **export_arr;
-	int export_count;
-	int i;
-	
+	t_export	*tmp;
+	t_export	**export_arr;
+	int			export_count;
+	int			i;
+
 	export_count = listsize(export);
 	if (export_count == 0)
-        return;
+		return ;
 	export_arr = malloc(sizeof(t_export *) * export_count);
-    if (!export_arr)
+	if (!export_arr)
 	{
 		perror("Error allocating memory for export array");
-        *last_exit_status = 1;
-        return;
+		*last_exit_status = 1;
+		return ;
 	}
-    i = 0;
-    tmp = export;
-    while(i < export_count)
-    {
-        export_arr[i] = tmp;
-        tmp = tmp->next;
-        i++;
-    }
-    sort_array(export_arr, export_count);
-    i = 0;
-    printing_export(export_arr, export_count);
-    free(export_arr);
+	i = 0;
+	tmp = export;
+	while (i < export_count)
+	{
+		export_arr[i] = tmp;
+		tmp = tmp->next;
+		i++;
+	}
+	sort_array(export_arr, export_count);
+	i = 0;
+	printing_export(export_arr, export_count);
+	free(export_arr);
 }
