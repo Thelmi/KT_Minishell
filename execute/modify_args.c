@@ -6,45 +6,29 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 19:04:39 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 18:18:35 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/17 21:18:16 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-static int	new_len(char *arg, t_env *envir, bool read_backslash)
+static int	new_len(char *arg, t_env *envir, int *last_exit_status)
 {
 	int		len;
 	int		i;
-	char	var_name[256];
-	int		var_len;
 
 	len = 0;
 	i = 0;
 	while (arg[i])
 	{
-		if (arg[i] == '$' && (i == 0 || arg[i - 1] != '\\') && ft_isalnum(arg[i
-				+ 1]))
+		if (arg[i] == '$' && arg[i + 1] == '?')
 		{
-			var_len = 0;
-			i++;
-			while (arg[i] && (ft_isalnum(arg[i]) || arg[i] == '_'))
-			{
-				var_name[var_len++] = arg[i++];
-			}
-			var_name[var_len] = '\0';
-			if (getcopyenv(var_name, &envir))
-			{
-				len += ft_strlen(getcopyenv(var_name, &envir));
-			}
+			len += handle_exit_status_len(last_exit_status);
+			i += 2;
 		}
-		else if (arg[i] == '\\' && arg[i + 1] != '$')
+		else if (arg[i] == '$' && ft_isalnum(arg[i + 1]))
 		{
-			if (read_backslash)
-			{
-				len++;
-			}
-			i++;
+			len += handle_var_len(arg, &i, envir);
 		}
 		else
 		{
@@ -55,71 +39,46 @@ static int	new_len(char *arg, t_env *envir, bool read_backslash)
 	return (len);
 }
 
-static char	*no_quotes(char *arg, t_env *envir, bool read_backslash,
-		int *last_exit_status)
+char	*allocate_result(char *arg, t_env *envir, int *last_exit_status)
+{
+	char	*res;
+
+	res = malloc(sizeof(char) * (new_len(arg, envir, last_exit_status) + 1));
+	if (!res)
+		return (NULL);
+	return (res);
+}
+
+static char	*no_quotes(char *arg, t_env *envir,int *last_exit_status)
 {
 	int		i;
 	int		j;
-	int		var_len;
 	char	*res;
-	char	var_name[256];
 
 	i = 0;
 	j = 0;
-	res = malloc(sizeof(char) * (new_len(arg, envir, read_backslash) + 1));
+	res = allocate_result(arg, envir, last_exit_status);
 	if (!res)
-	{
 		return (NULL);
-	}
 	while (arg[i])
 	{
 		if (arg[i] == '$' && arg[i + 1] == '?')
 		{
-			ft_strcat(res, ft_itoa(*last_exit_status));
-			j = ft_strlen(res);
+			j = handle_exit_status(res, j, last_exit_status);
 			i += 2;
 		}
 		else if (arg[i] == '$' && ft_isalnum(arg[i + 1]))
 		{
-			var_len = 0;
-			i++;
-			while (arg[i] && (ft_isalnum(arg[i]) || arg[i] == '_'))
-			{
-				var_name[var_len++] = arg[i++];
-			}
-			var_name[var_len] = '\0';
-			if (getcopyenv(var_name, &envir))
-			{
-				ft_strcat(res, getcopyenv(var_name, &envir));
-				j = ft_strlen(res);
-			}
-		}
-		else if (arg[i] == '\\' && ft_isalnum(arg[i + 1]))
-		{
-			if (read_backslash)
-			{
-				res[j++] = arg[i++];
-			}
-			else
-			{
-				i++;
-			}
-		}
-		else if (arg[i] == '\\' && !ft_isalnum(arg[i + 1]))
-		{
-			i++;
-			res[j++] = arg[i++];
+			j = handle_var_expansion(res, arg, &i, envir);
 		}
 		else
-		{
 			res[j++] = arg[i++];
-		}
 	}
 	res[j] = '\0';
 	return (res);
 }
 
-static char	*double_quotes(char *arg, t_env *envir, bool read_backslash,
+static char	*double_quotes(char *arg, t_env *envir,
 		int *last_exit_status)
 {
 	char	*res;
@@ -128,7 +87,7 @@ static char	*double_quotes(char *arg, t_env *envir, bool read_backslash,
 	len = ft_strlen(arg);
 	arg[len - 1] = '\0';
 	arg = arg + 1;
-	res = no_quotes(arg, envir, read_backslash, last_exit_status);
+	res = no_quotes(arg, envir, last_exit_status);
 	return (res);
 }
 
@@ -156,26 +115,19 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 {
 	int		i;
 	char	*tmp;
-	bool	read_backslash;
 
-	read_backslash = false;
 	i = 1;
 	while (args[i])
 	{
 		if (args[i][0] == '\'' && args[i][ft_strlen(args[i]) - 1] == '\'')
-		{
 			tmp = single_quotes(args[i]);
-		}
 		else if (args[i][0] == '"' && args[i][ft_strlen(args[i]) - 1] == '"')
 		{
-			read_backslash = true;
-			tmp = double_quotes(args[i], envir, read_backslash,
+			tmp = double_quotes(args[i], envir,
 					last_exit_status);
 		}
 		else
-		{
-			tmp = no_quotes(args[i], envir, read_backslash, last_exit_status);
-		}
+			tmp = no_quotes(args[i], envir, last_exit_status);
 		if (args[i])
 			free(args[i]);
 		args[i] = tmp;
