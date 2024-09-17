@@ -1,12 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_execute.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/17 18:47:43 by krazikho          #+#    #+#             */
+/*   Updated: 2024/09/17 18:48:11 by krazikho         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../minishell.h"
-
 
 void panic(char *s)
 {
   printf("%s\n", s);
   exit(1);
 }
+
 int fork1(void)
 {
   int pid;
@@ -17,8 +28,6 @@ int fork1(void)
   return pid;
 }
 
-/* Function that will look for the path line inside the environment, will
- split and test each command path and then return the right one. */
 char	*find_path(char *cmd, char **envp)
 {
 	char	**paths;
@@ -53,7 +62,7 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 	struct execcmd *ecmd;
 	struct pipecmd *pcmd;
 	struct redircmd *rcmd;
-	int saved_stdin = dup(STDIN_FILENO); //close all fds
+	int saved_stdin = dup(STDIN_FILENO);
 	int saved_stdout = dup(STDOUT_FILENO);
 	int status = 0;
 	int pipe_fd;
