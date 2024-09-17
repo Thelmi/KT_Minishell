@@ -15,17 +15,20 @@ t_export	*create_export_nodes(char *variable_content, char *value_content)
 
 t_export	*storing_export(char **ev)
 {
-	t_export	*export;
-	t_export	*tmp;
-	t_export	*newnode;
-	int		i;
+	t_export *export;
+	t_export *tmp;
+	t_export *newnode;
+	int i;
 
 	if (!ev || !ev[0])
 		return (NULL);
 	export = create_export_nodes(substr_before_char(ev[0], '='),
 			substr_after_char(ev[0], '='));
-	if (!export)
+	if (!export || !export->variable || !export->value)
+	{
+		free_export(export);
 		return (NULL);
+	}
 	newnode = NULL;
 	tmp = export;
 	i = 1;
