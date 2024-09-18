@@ -38,6 +38,7 @@ typedef struct env
 {
 	char			*variable;
 	char			*value;
+	char 			**ev;
 	struct env		*next;
 }					t_env;
 
