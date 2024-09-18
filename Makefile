@@ -16,9 +16,9 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror
 LDFLAGS = -L/opt/vagrant/embedded/lib/ -lreadline -I/opt/vagrant/embedded/include/readline
 
-
 NAME_SRCS = main.c signals.c execute/execute_command.c execute/execute_builtin.c execute/modify_args.c execute/parse_execute.c\
-			utils/string_functions.c utils/modify_utils.c utils/env_related_utils.c utils/export_related_utils.c utils/free.c utils/cd_utils.c utils/echo_utils.c utils/get_next_line.c utils/get_next_line_utils.c\
+			utils/string_functions.c utils/modify_utils.c utils/env_related_utils.c utils/export_related_utils.c utils/free.c \
+			utils/string_functions2.c utils/other_utils.c utils/cd_utils.c utils/echo_utils.c utils/get_next_line.c utils/get_next_line_utils.c\
 			./builtins/pwd.c ./builtins/exit_builtin.c ./builtins/env.c ./builtins/export_no_args.c ./builtins/echo.c\
 			./builtins/export_with_args.c ./builtins/unset.c ./builtins/cd.c\
 
