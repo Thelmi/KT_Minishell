@@ -12,6 +12,31 @@
 
 #include "../minishell.h"
 
+long long ft_atoi(const char *str)
+{
+	int				i;
+	long long	sign;
+	long long	result;
+
+	i = 0;
+	sign = 1;
+	result = 0;
+	while ((str[i] >= 9 && str[i] <= 13) || str[i] == 32)
+		i++;
+	if (str[i] == '+' || str[i] == '-')
+	{
+		if (str[i] == '-')
+			sign *= -1;
+		i++;
+	}
+	while (str[i] >= '0' && str[i] <= '9')
+	{
+		result = (result * 10) + (str[i] - '0');
+		i++;
+	}
+	return (result * sign);
+}
+
 void	builtin_exit(char **args, int *last_exit_status)
 {
 	int		exit_status;
@@ -20,6 +45,12 @@ void	builtin_exit(char **args, int *last_exit_status)
 	exit_status = 0;
 	arg = args[1];
 	printf("exit\n");
+	if (args[2] != NULL) 
+	{
+		write(2, "bash: exit: too many arguments\n", 31);
+		*last_exit_status = 1;
+		return;
+	}
 	if (arg != NULL)
 	{
 		while (*arg)
@@ -34,7 +65,7 @@ void	builtin_exit(char **args, int *last_exit_status)
 			}
 			arg++;
 		}
-		exit_status = atoi(args[1]);
+		exit_status = ft_atoi(args[1]);
 		exit_status %= 256;
 	}
 	*last_exit_status = exit_status;
