@@ -6,15 +6,47 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/17 21:08:46 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 21:18:53 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 15:38:08 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-int	handle_exit_status_len(int *last_exit_status)
+static int	new_len(char *arg, t_env *envir, int *last_exit_status)
 {
-	return (ft_strlen(ft_itoa(*last_exit_status)));
+	int	len;
+	int	i;
+
+	len = 0;
+	i = 0;
+	while (arg[i])
+	{
+		if (arg[i] == '$' && arg[i + 1] == '?')
+		{
+			len += ft_strlen(ft_itoa(*last_exit_status));
+			i += 2;
+		}
+		else if (arg[i] == '$' && ft_isalnum(arg[i + 1]))
+		{
+			len += handle_var_len(arg, &i, envir);
+		}
+		else
+		{
+			len++;
+			i++;
+		}
+	}
+	return (len);
+}
+
+char	*allocate_result(char *arg, t_env *envir, int *last_exit_status)
+{
+	char	*res;
+
+	res = malloc(sizeof(char) * (new_len(arg, envir, last_exit_status) + 1));
+	if (!res)
+		return (NULL);
+	return (res);
 }
 
 int	handle_var_len(char *arg, int *i, t_env *envir)
@@ -35,8 +67,7 @@ int	handle_var_len(char *arg, int *i, t_env *envir)
 	return (0);
 }
 
-
-int handle_exit_status(char *res, int j, int *last_exit_status)
+int	handle_exit_status(char *res, int j, int *last_exit_status)
 {
 	(void)j;
 	ft_strcat(res, ft_itoa(*last_exit_status));
