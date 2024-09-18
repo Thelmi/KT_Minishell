@@ -6,170 +6,11 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 16:20:03 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/17 18:51:41 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 15:49:05 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
-
-int	num_strncmp(char *s1, char *s2)
-{
-	int	i;
-
-	i = 0;
-	while (s1[i] && s2[i] && s1[i] == s2[i])
-		i++;
-	return (s1[i] - s2[i]);
-}
-
-int	ft_isalnum(int c)
-{
-	if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122))
-		return (1);
-	return (0);
-}
-
-static int	ft_num_len(int n)
-{
-	int	len;
-
-	len = (n <= 0) ? 1 : 0;
-	while (n != 0)
-	{
-		n /= 10;
-		len++;
-	}
-	return (len);
-}
-
-char	*ft_itoa(int n)
-{
-	char	*str;
-	int		len;
-	long	num;
-
-	num = n;
-	len = ft_num_len(n);
-	str = (char *)malloc(sizeof(char) * (len + 1));
-	if (!str)
-		return (NULL);
-	str[len--] = '\0';
-	if (num == 0)
-		str[0] = '0';
-	if (num < 0)
-	{
-		str[0] = '-';
-		num = -num;
-	}
-	while (num > 0)
-	{
-		str[len--] = (num % 10) + '0';
-		num /= 10;
-	}
-	return (str);
-}
-
-char	*ft_strcat(char *dest, const char *src)
-{
-	int	i;
-	int	j;
-
-	i = 0;
-	j = 0;
-	while (dest[i] != '\0')
-	{
-		i++;
-	}
-	while (src[j] != '\0')
-	{
-		dest[i] = src[j];
-		i++;
-		j++;
-	}
-	dest[i] = '\0';
-	return (dest);
-}
-
-struct cmd	*print_tree(struct cmd *cmd)
-{
-	struct execcmd	*ecmd;
-	struct pipecmd	*pcmd;
-	struct redircmd	*rcmd;
-
-	if (cmd == 0)
-		return (0);
-	if (cmd->type == EXEC)
-	{
-		ecmd = (struct execcmd *)cmd;
-		printf("%s\n", ecmd->argv[0]);
-		if (ecmd->argv[1])
-			printf("argv[1] : %s\n", ecmd->argv[1]);
-	}
-	else if (cmd->type == REDIR)
-	{
-		rcmd = (struct redircmd *)cmd;
-		printf("redirect %d\n", rcmd->type);
-		print_tree(rcmd->cmd);
-	}
-	else if (cmd->type == PIPE)
-	{
-		printf("|\n");
-		pcmd = (struct pipecmd *)cmd;
-		print_tree(pcmd->left);
-		print_tree(pcmd->right);
-	}
-	return (cmd);
-}
-
-char	*ft_strjoin(char const *s1, char const *s2)
-{
-	char	*tab;
-	int		i;
-	int		j;
-
-	i = 0;
-	j = 0;
-	if (!s1 || !s2)
-		return (NULL);
-	tab = (char *)malloc(sizeof(*tab) * (ft_strlen(s1) + ft_strlen(s2)) + 1);
-	if (tab == 0)
-		return (NULL);
-	while (s1[i])
-	{
-		tab[i] = s1[i];
-		i++;
-	}
-	while (s2[j])
-	{
-		tab[i] = s2[j];
-		j++;
-		i++;
-	}
-	tab[i] = '\0';
-	return (tab);
-}
-
-char	*ft_strnstr(const char *big, const char *little, size_t len)
-{
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	if (little[i] == '\0')
-		return ((char *)big);
-	while (big[i] && i < len)
-	{
-		j = 0;
-		while (big[i + j] == little[j] && i + j < len)
-		{
-			if (little[j + 1] == '\0')
-				return ((char *)big + i);
-			j++;
-		}
-		i++;
-	}
-	return (0);
-}
 
 bool	ft_strcmp(char *s1, char *s2)
 {
@@ -192,16 +33,6 @@ bool	ft_strcmp(char *s1, char *s2)
 		}
 	}
 	return (true);
-}
-
-size_t	ft_strlen(const char *s)
-{
-	size_t	i;
-
-	i = 0;
-	while (s[i] != '\0')
-		i++;
-	return (i);
 }
 
 size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)
@@ -252,67 +83,6 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 		ft_strlcpy(str, s + start, len + 1);
 	}
 	return (str);
-}
-
-int	wordcount(char *str, char sep)
-{
-	int	i;
-	int	word;
-
-	word = 0;
-	i = 1;
-	if (!*str)
-		return (0);
-	while (str[i])
-	{
-		if ((str[i] == sep && str[i - 1] != sep) || (str[i] != sep && str[i
-				+ 1] == '\0'))
-			word++;
-		i++;
-	}
-	return (word);
-}
-
-char	**free_arr(char **arr)
-{
-	int	i;
-
-	i = 0;
-	while (arr[i])
-	{
-		free(arr[i]);
-		i++;
-	}
-	free(arr);
-	return (NULL);
-}
-
-char	**getwords(char **arr, char *s, char c, int word)
-{
-	int	i;
-	int	j;
-	int	k;
-
-	i = 0;
-	k = 0;
-	while (s[i] && k < word)
-	{
-		j = 0;
-		if (s[i] && s[i] != c)
-		{
-			while (s[i + j] && s[i + j] != c)
-				j++;
-			arr[k] = ft_substr(s, i, j);
-			if (!arr[k])
-				return (free_arr(arr));
-			k++;
-			i += j;
-		}
-		else
-			i++;
-	}
-	arr[k] = NULL;
-	return (arr);
 }
 
 char	**ft_split(char const *s, char c)
