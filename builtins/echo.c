@@ -15,7 +15,7 @@
 void	echo(char **command)
 {
 	bool	n_flag;
-	int		i;
+	int	i;
 
 	n_flag = false;
 	i = 1;
