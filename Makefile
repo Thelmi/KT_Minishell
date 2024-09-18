@@ -14,7 +14,7 @@ NAME = minishell #changed name of the program
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
-LDFLAGS = -lreadline
+LDFLAGS = -L/opt/vagrant/embedded/lib/ -lreadline -I/opt/vagrant/embedded/include/readline
 
 
 NAME_SRCS = main.c signals.c execute/execute_command.c execute/execute_builtin.c execute/modify_args.c execute/parse_execute.c\
