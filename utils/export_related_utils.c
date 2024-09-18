@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   export_related_utils.c                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/18 14:38:17 by krazikho          #+#    #+#             */
+/*   Updated: 2024/09/18 14:38:18 by krazikho         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 t_export	*create_export_nodes(char *variable_content, char *value_content)
@@ -15,10 +27,10 @@ t_export	*create_export_nodes(char *variable_content, char *value_content)
 
 t_export	*storing_export(char **ev)
 {
-	t_export *export;
-	t_export *tmp;
-	t_export *newnode;
-	int i;
+	t_export	*export;
+	t_export	*tmp;
+	t_export	*newnode;
+	int			i;
 
 	if (!ev || !ev[0])
 		return (NULL);
