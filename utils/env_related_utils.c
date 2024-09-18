@@ -116,21 +116,18 @@ t_env	*storing_env(char **ev)
 		return (NULL);
 	env = create_envir(substr_before_char(ev[0], '='),
 			substr_after_char(ev[0], '='), ev);
-	if (!env || !env->variable || !env->value)
-	{
-		free_env(env);
+	if (!env)
 		return (NULL);
-	}
 	newnode = NULL;
 	tmp = env;
 	i = 1;
 	while (ev[i])
 	{
-		newnode = create_envir(substr_before_char(ev[0], '='),
-			substr_after_char(ev[0], '='), ev);
-		if (!newnode || !newnode->variable || !newnode->value)
+		newnode = create_envir(substr_before_char(ev[i], '='),
+				substr_after_char(ev[i], '='), ev);
+		if (!newnode)
 			return (free_env(env), NULL);
-		tmp->next = newnode;
+		tmp ->next = newnode;
 		tmp = tmp->next;
 		i++;
 	}
