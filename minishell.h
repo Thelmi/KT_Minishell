@@ -33,6 +33,7 @@ typedef struct env
 {
 	char			*variable;
 	char			*value;
+	char 			**ev;
 	struct env		*next;
 }					t_env;
 
@@ -210,5 +211,8 @@ size_t				enhanced_strlen(char *str, int c);
 int					gnl_free_str(char **str);
 char				*gnl_strjoin(char *s1, char *s2);
 void				builtin_exit(char **args, int *last_exit_status);
+
+// rl_replace_line
+void rl_replace_line (const char *text, int clear_undo);
 
 #endif
