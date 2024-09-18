@@ -21,7 +21,8 @@ static void	get_and_update(char *buffer, char **str)
 	while (buffer[i] && buffer[i] != '\n')
 		i++;
 	if (buffer[i] == '\n')
-		gnl_memmove(buffer, buffer + i + 1, enhanced_strlen(buffer + i + 1, 3) + 1);
+		gnl_memmove(buffer, buffer + i + 1, enhanced_strlen(buffer + i + 1, 3)
+			+ 1);
 	else
 		buffer[0] = '\0';
 }
