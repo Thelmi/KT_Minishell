@@ -105,7 +105,7 @@ char				**getwords(char **arr, char *s, char c, int word);
 char				**ft_split(char const *s, char c);
 char				*getcopyenv(char *str, t_env **envir);
 int					ft_isalnum(int c);
-
+int					ft_num_len(int n);
 // Freeing functions
 void				free_env(t_env *env);
 char				**free_arr(char **arr);
@@ -143,7 +143,7 @@ void				configure_terminal_behavior(void);
 typedef struct cmd
 {
 	int				type;
-}
+}cmd;
 
 typedef struct execcmd
 {
