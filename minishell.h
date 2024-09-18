@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 14:58:51 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 21:17:27 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 15:56:45 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,15 @@
 
 # define BUFFER_SIZE 1
 
+typedef struct s_context
+{
+	int				last_exit_status;
+}t_context;
+
 typedef struct env
 {
 	char			*variable;
 	char			*value;
-	char 			**ev;
 	struct env		*next;
 }					t_env;
 
@@ -42,15 +46,16 @@ typedef struct export
 	char			*variable;
 	char			*value;
 	struct export	*next;
-}
-t_export;
+}t_export;
 
 // Functions used to store the enironment in the struct
 
-t_env	*create_env_nodes(char *variable_content, char *value_content);
-t_env	*storing_env(char **ev);                                       
+t_env				*create_env_nodes(char *variable_content,
+						char *value_content);
+t_env				*storing_env(char **ev);
 t_export			*storing_export(char **ev);
-t_export			*create_export_nodes(char *variable_content, char *value_content);
+t_export			*create_export_nodes(char *variable_content,
+						char *value_content);
 
 // Builtins
 void				env(t_env *env, int *last_exit_status);
@@ -83,8 +88,8 @@ void				update_env_for_cd(t_env **env, char *variable, char *value);
 bool				is_only_n(const char *str);
 
 // We might use them, globally
-char	*substr_before_char(char *str, char c); // warning malloc is used
-char	*substr_after_char(char *str, char c);  // warning malloc is used
+char				*substr_before_char(char *str, char c);
+char				*substr_after_char(char *str, char c);
 bool				ft_strcmp(char *s1, char *s2);
 int					listsize(t_export *export);
 int					num_strncmp(char *s1, char *s2);
@@ -113,61 +118,63 @@ t_env				*execute_builtin(t_env **envir, char **args,
 void				modify_args(char **args, t_env *envir,
 						int *last_exit_status);
 bool				is_builtin(char *command);
-char				*allocate_result(char *arg, t_env *envir, int *last_exit_status);
-int 				handle_exit_status(char *res, int j, int *last_exit_status);
-int					handle_var_expansion(char *res, char *arg, int *i, t_env *envir);
+char				*allocate_result(char *arg, t_env *envir,
+						int *last_exit_status);
+int					handle_exit_status(char *res, int j, int *last_exit_status);
+int					handle_var_expansion(char *res, char *arg, int *i,
+						t_env *envir);
 int					handle_exit_status_len(int *last_exit_status);
 int					handle_var_len(char *arg, int *i, t_env *envir);
+
 // signals
-void				sigint_handler(int sig);
-void				sigquit_handler(int sig);
+void				setup_signals(t_context *context);
+void				sigint_handler(int sig, siginfo_t *info, void *context);
+void				sigquit_handler(int sig, siginfo_t *info, void *context);
 void				configure_terminal_behavior(void);
 
 //////parse & execute
-
 # define EXEC 1
 # define BUILTIN 2
 # define REDIR 3
 # define PIPE 4
 # define HEREDOC 5
-
 # define MAXARGS 10
 
-typedef struct cmd // Base command structure
+typedef struct cmd
 {
-	int type; // Type of command (EXEC, BUILTIN, REDIR, PIPE)
-}					cmd;
+	int				type;
+}
 
-typedef struct execcmd // Execution command structure
+typedef struct execcmd
 {
-	int type;             // Type should be EXEC
-	char *argv[MAXARGS];  // Argument vector (command, flags, args)
-	char *eargv[MAXARGS]; // End pointers for each argument
-}					t_execcmd;
+	int				type;
+	char			*argv[MAXARGS];
+	char			*eargv[MAXARGS];
+}t_execcmd;
 
-typedef struct heredoc // Execution command structure
+typedef struct heredoc
 {
-	int type;    // Type should be HEREDOC
-	char *argv;  // Argument vector (command, flags, args)
-	char *eargv; // End pointers for each argument
-	void *next;
+	int				type;
+	char			*argv;
+	char			*eargv;
+	void			*next;
 }					t_heredoc;
 
-typedef struct redircmd // Redirection command structure
+typedef struct redircmd
 {
-	int type;        // Type should be REDIR
-	struct cmd *cmd; // Command to be executed before redirection
-	char *file;      // File to which output/input is redirected
-	char *efile;     // End pointer for the file name
-	int mode;        // File open mode (O_WRONLY | O_CREAT)
-	int fd;          // File descriptor for redirection (0 = stdin, 1 = stdout)
+	int				type;
+	struct cmd		*cmd;
+	char			*file;
+	char			*efile;
+	int				mode;
+	int				fd;
 }					t_redircmd;
 
-typedef struct pipecmd // Pipe command structure
+typedef struct pipecmd
 {
-	int type;
-	struct cmd *left;
-	struct cmd *right;
+	int				type;
+	struct cmd		*left;
+	struct cmd		*right;
 }					t_pipecmd;
 
 typedef struct main
@@ -177,33 +184,41 @@ typedef struct main
 }					t_main;
 
 // Main
-void	runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exit_status); 
-int	fork1(void);                                                                              
-void	panic(char *s);                                                                      
+void				runcmd(t_main main, char **ev, t_env **envir,
+						t_export **exp, int *last_exit_status);
+int					fork1(void);
+void				panic(char *s);
 
 // Parsing
-struct cmd			*parsepipe(char **ps, char *es, struct heredoc **heredoc, int *last_exit_status);
-t_main	parsecmd(char *s, int *last_exit_status);                                            
-struct cmd	*parseexec(char **ps, char *es, struct heredoc **heredoc, int *last_exit_status);
+struct cmd			*parsepipe(char **ps, char *es, struct heredoc **heredoc,
+						int *last_exit_status);
+t_main				parsecmd(char *s, int *last_exit_status);
+struct cmd			*parseexec(char **ps, char *es, struct heredoc **heredoc,
+						int *last_exit_status);
 
 // Parse redirections
-struct cmd	*parseredirs(struct cmd *cmd, char **ps, char *es, struct heredoc **heredoc, int *last_exit_status); // Parse redirections
-int	gettoken(char **ps, char *es, char **q, char **eq);                                                        
-struct cmd	*pipecmd(struct cmd *left, struct cmd *right);                                                      
+struct cmd			*parseredirs(struct cmd *cmd, char **ps, char *es,
+						struct heredoc **heredoc, int *last_exit_status);
+int					gettoken(char **ps, char *es, char **q, char **eq);
+struct cmd			*pipecmd(struct cmd *left, struct cmd *right);
 struct cmd			*nulterminate(struct cmd *cmd);
-struct cmd	*execcmd(void);                                                          
-struct cmd	*redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd); // Create a redirection command
-void				redircmd_h(char *argv, char *eargv, struct heredoc **heredoc);
+struct cmd			*execcmd(void);
+struct cmd			*redircmd(struct cmd *subcmd, char *file, char *efile,
+						int mode, int fd);
+void				redircmd_h(char *argv, char *eargv,
+						struct heredoc **heredoc);
 
 // get next line
 char				*ft_strcat(char *dest, const char *src);
 char				*ft_strjoin(char const *s1, char const *s2);
-char				*ft_strnstr(const char *big, const char *little, size_t len);
+char				*ft_strnstr(const char *big, const char *little,
+						size_t len);
 struct cmd			*print_tree(struct cmd *cmd);
 
 // void	*ft_memmove(void *dst, const void *src, size_t len);
 struct cmd			*remove_quotes(struct cmd *cmd);
-void				update_export(t_export **export, char *variable, int *last_exit_status);
+void				update_export(t_export **export, char *variable,
+						int *last_exit_status);
 char				*get_next_line(int fd);
 char				*gnl_strchr(const char *s, int c);
 void				*gnl_memmove(void *dst, const void *src, size_t len);
@@ -213,6 +228,6 @@ char				*gnl_strjoin(char *s1, char *s2);
 void				builtin_exit(char **args, int *last_exit_status);
 
 // rl_replace_line
-void rl_replace_line (const char *text, int clear_undo);
+void				rl_replace_line(const char *text, int clear_undo);
 
 #endif
