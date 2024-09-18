@@ -6,50 +6,13 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 19:04:39 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 21:18:16 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 14:37:19 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
-static int	new_len(char *arg, t_env *envir, int *last_exit_status)
-{
-	int		len;
-	int		i;
-
-	len = 0;
-	i = 0;
-	while (arg[i])
-	{
-		if (arg[i] == '$' && arg[i + 1] == '?')
-		{
-			len += handle_exit_status_len(last_exit_status);
-			i += 2;
-		}
-		else if (arg[i] == '$' && ft_isalnum(arg[i + 1]))
-		{
-			len += handle_var_len(arg, &i, envir);
-		}
-		else
-		{
-			len++;
-			i++;
-		}
-	}
-	return (len);
-}
-
-char	*allocate_result(char *arg, t_env *envir, int *last_exit_status)
-{
-	char	*res;
-
-	res = malloc(sizeof(char) * (new_len(arg, envir, last_exit_status) + 1));
-	if (!res)
-		return (NULL);
-	return (res);
-}
-
-static char	*no_quotes(char *arg, t_env *envir,int *last_exit_status)
+static char	*no_quotes(char *arg, t_env *envir, int *last_exit_status)
 {
 	int		i;
 	int		j;
@@ -115,13 +78,15 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 {
 	int		i;
 	char	*tmp;
+	int		len;
 
 	i = 1;
 	while (args[i])
 	{
-		if (args[i][0] == '\'' && args[i][ft_strlen(args[i]) - 1] == '\'')
+		len = ft_strlen(args[i]);
+		if (args[i][0] == '\'' && args[i][len - 1] == '\'')
 			tmp = single_quotes(args[i]);
-		else if (args[i][0] == '"' && args[i][ft_strlen(args[i]) - 1] == '"')
+		else if (args[i][0] == '"' && args[i][len - 1] == '"')
 		{
 			tmp = double_quotes(args[i], envir,
 					last_exit_status);
