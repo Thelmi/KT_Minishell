@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 19:03:09 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 18:35:23 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 14:28:05 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 void	echo(char **command)
 {
-	bool n_flag;
-	int i;
+	bool	n_flag;
+	int		i;
 
 	n_flag = false;
 	i = 1;
