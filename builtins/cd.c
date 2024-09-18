@@ -6,16 +6,29 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/20 14:00:29 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 18:33:29 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 14:27:54 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../minishell.h"
 
+static void	update_env_vars_for_cd(t_env **envir, int *last_exit_status)
+{
+	char	cwd[256];
+
+	update_env_for_cd(envir, "OLDPWD", getcopyenv("PWD", envir));
+	if (getcwd(cwd, sizeof(cwd)) != NULL)
+		update_env_for_cd(envir, "PWD", cwd);
+	else
+	{
+		perror("cd: Error getting current working directory");
+		*last_exit_status = 1;
+	}
+}
+
 void	cd(char **args, t_env **envir, int *last_exit_status)
 {
 	char	*path;
-	char	cwd[256];
 
 	if (!args[1])
 	{
@@ -35,14 +48,5 @@ void	cd(char **args, t_env **envir, int *last_exit_status)
 		*last_exit_status = 1;
 	}
 	else
-	{
-		update_env_for_cd(envir, "OLDPWD", getcopyenv("PWD", envir));
-		if (getcwd(cwd, sizeof(cwd)) != NULL)
-			update_env_for_cd(envir, "PWD", cwd);
-		else
-		{
-			perror("cd: Error getting current working directory");
-			*last_exit_status = 1;
-		}
-	}
+		update_env_vars_for_cd(envir, last_exit_status);
 }
