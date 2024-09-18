@@ -167,8 +167,8 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 	if (fork() == 0)
 	{
 		remove_quotes(cmd);
-		if (execve(ecmd->argv[0], ecmd->argv, ev) == -1)
-			execve(find_path(ecmd->argv[0], ev), ecmd->argv, ev); //you should free properly, make sure strjoin is not leaking
+		if (execve(ecmd->argv[0], ecmd->argv, (*envir)->ev) == -1)
+			execve(find_path(ecmd->argv[0], (*envir)->ev), ecmd->argv, (*envir)->ev); //you should free properly, make sure strjoin is not leaking
 		perror("execve failed"); // change it...
 		*last_exit_status = 127;
     //free here if there is an error
