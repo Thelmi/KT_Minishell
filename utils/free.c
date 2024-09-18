@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 16:17:37 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/17 18:48:56 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 15:41:33 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,4 +50,18 @@ void	free_env_node(t_env *node)
 		free(node->value);
 		free(node);
 	}
+}
+
+char	**free_arr(char **arr)
+{
+	int	i;
+
+	i = 0;
+	while (arr[i])
+	{
+		free(arr[i]);
+		i++;
+	}
+	free(arr);
+	return (NULL);
 }
