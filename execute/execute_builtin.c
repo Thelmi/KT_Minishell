@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 14:55:09 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/17 18:47:26 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 16:00:48 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,29 +22,23 @@ static int	count_args(char **args)
 	return (count);
 }
 
-t_env	*execute_builtin(t_env **envir, char **args, int *last_exit_status,
+static void	execute_command(char **args, t_env **envir, int *last_exit_status,
 		t_export **exp)
 {
 	int	count;
 
-	if (!args || !args[0])
-		return (*envir);
-	modify_args(args, *envir, last_exit_status);
 	count = count_args(args);
 	if (ft_strcmp("echo", args[0]) == true)
 	{
 		echo(args);
-		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("cd", args[0]) == true)
 	{
 		cd(args, envir, last_exit_status);
-		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("pwd", args[0]) == true)
 	{
 		pwd(last_exit_status);
-		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("export", args[0]) == true)
 	{
@@ -52,12 +46,21 @@ t_env	*execute_builtin(t_env **envir, char **args, int *last_exit_status,
 			export_with_args(envir, exp, count, args, last_exit_status);
 		else
 			export_no_arg(*exp, last_exit_status);
-		*last_exit_status = 0;
 	}
-	else if (ft_strcmp("unset", args[0]) == true)
+	*last_exit_status = 0;
+}
+
+t_env	*execute_builtin(t_env **envir, char **args, int *last_exit_status,
+		t_export **exp)
+{
+	if (!args || !args[0])
+		return (*envir);
+	modify_args(args, *envir, last_exit_status);
+	execute_command(args, envir, last_exit_status, exp);
+	if (ft_strcmp("unset", args[0]) == true)
 	{
 		if (args[1] != NULL)
-			unset(envir, count, args, last_exit_status);
+			unset(envir, count_args(args), args, last_exit_status);
 		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("env", args[0]) == true)
