@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_builtin.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 14:55:09 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 16:00:48 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 21:12:21 by thelmy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,12 @@ static void	execute_command(char **args, t_env **envir, int *last_exit_status,
 	}
 	else if (ft_strcmp("export", args[0]) == true)
 	{
+			
 		if (args[1] != NULL)
+		{
+			//printf("im here\n");
 			export_with_args(envir, exp, count, args, last_exit_status);
+		}
 		else
 			export_no_arg(*exp, last_exit_status);
 	}
@@ -65,7 +69,7 @@ t_env	*execute_builtin(t_env **envir, char **args, int *last_exit_status,
 	}
 	else if (ft_strcmp("env", args[0]) == true)
 	{
-		env(*envir, last_exit_status);
+		env_func(*envir, last_exit_status);
 		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("exit", args[0]) == true)

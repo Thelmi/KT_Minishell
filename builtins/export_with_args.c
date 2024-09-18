@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_with_args.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/21 18:10:03 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/17 18:47:03 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 21:21:45 by thelmy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,70 +118,124 @@ void	update_export(t_export **export, char *variable, int *last_exit_status)
 	}
 }
 
-void	export_with_args(t_env **env, t_export **export, int ac, char **av,
-		int *last_exit_status)
-{
-	int		i;
-	char	*variable;
-	char	*value;
-	char	*export_var;
+//void	export_with_args(t_env **env, t_export **export, int ac, char **av,
+//		int *last_exit_status)
+//{
+//	int		i;
+//	char	*variable;
+//	char	*value;
+//	char	*export_var;
 
-	i = 1;
-	while (i < ac)
-	{
-		if (strchr(av[i], '=') == NULL)
-		{
-			if (!is_valid_identifier(av[i]))
-			{
-				write(2, "export: ", 9);
+//	i = 1;
+//	while (i < ac)
+//	{
+//		printf("im here\n");
+//		if (strchr(av[i], '=') == NULL)
+//		{
+//			if (!is_valid_identifier(av[i]))
+//			{
+//				write(2, "export: ", 9);
+//				write(2, av[i], strlen(av[i]));
+//				write(2, ": not a valid identifier\n", 26);
+//				*last_exit_status = 1;
+//				i++;
+//				continue ;
+//			}
+//			variable = malloc(ft_strlen(av[i]) + 1);
+//			if (!variable)
+//			{
+//				perror("Error allocating memory for variable");
+//				*last_exit_status = 1;
+//				return ;
+//			}
+//			strcpy(variable, av[i]);
+//			update_export(export, variable, last_exit_status);
+//		}
+//		else
+//		{
+//			variable = substr_before_char(av[i], '=');
+//			value = substr_after_char(av[i], '=');
+//			if (variable == NULL || !*variable
+//				|| !is_valid_identifier(variable))
+//			{
+//				write(2, "export: ", 8);
+//				write(2, av[i], strlen(av[i]));
+//				write(2, ": not a valid identifier\n", 26);
+//				free(variable);
+//				free(value);
+//				*last_exit_status = 1;
+//			}
+//			else
+//			{
+//				update_env(env, variable, value, last_exit_status);
+//				export_var = malloc(strlen(variable) + 1);
+//				if (!export_var)
+//				{
+//					perror("Error allocating memory for export variable");
+//					free(variable);
+//					free(value);
+//					*last_exit_status = 1;
+//					return ;
+//				}
+//				strcpy(export_var, variable);
+//				update_export(export, export_var, last_exit_status);
+				
+//				//free(variable);
+//				//free(value);
+//				//env_func(*env, last_exit_status);
+//			}
+//		}
+//		i++;
+//	}
+	
+//}
+
+void export_with_args(t_env **env, t_export **export, int ac, char **av, int *last_exit_status) {
+    int i = 1;
+    char *variable;
+    char *value;
+    char *export_var;
+
+    while (i < ac) {
+        if (strchr(av[i], '=') == NULL) {
+            if (!is_valid_identifier(av[i])) {
+                fprintf(stderr, "export: %s: not a valid identifier\n", av[i]);
+                *last_exit_status = 1;
+                i++;
+                continue;
+            }
+            variable = strdup(av[i]);  // safer to use strdup
+            if (!variable) {
+                perror("Error allocating memory for variable");
+                *last_exit_status = 1;
+                return;
+            }
+            update_export(export, variable, last_exit_status);
+        } else {
+            variable = substr_before_char(av[i], '=');
+            value = substr_after_char(av[i], '=');
+
+            if (variable == NULL || !*variable || !is_valid_identifier(variable)) {
+                write(2, "export: ", 8);
 				write(2, av[i], strlen(av[i]));
 				write(2, ": not a valid identifier\n", 26);
-				*last_exit_status = 1;
-				i++;
-				continue ;
-			}
-			variable = malloc(ft_strlen(av[i]) + 1);
-			if (!variable)
-			{
-				perror("Error allocating memory for variable");
-				*last_exit_status = 1;
-				return ;
-			}
-			strcpy(variable, av[i]);
-			update_export(export, variable, last_exit_status);
-		}
-		else
-		{
-			variable = substr_before_char(av[i], '=');
-			value = substr_after_char(av[i], '=');
-			if (variable == NULL || !*variable
-				|| !is_valid_identifier(variable))
-			{
-				write(2, "export: ", 8);
-				write(2, av[i], strlen(av[i]));
-				write(2, ": not a valid identifier\n", 26);
-				free(variable);
-				free(value);
-				*last_exit_status = 1;
-			}
-			else
-			{
-				update_env(env, variable, value, last_exit_status);
-				export_var = malloc(strlen(variable) + 1);
-				if (!export_var)
-				{
-					perror("Error allocating memory for export variable");
-					free(variable);
-					free(value);
-					*last_exit_status = 1;
-					return ;
-				}
-				strcpy(export_var, variable);
-				update_export(export, export_var, last_exit_status);
-				free(variable);
-				free(value);
-			}
-		}
-		i++;
-	}
+                free(variable);
+                free(value);
+                *last_exit_status = 1;
+            } else {
+                update_env(env, variable, value, last_exit_status);
+
+                export_var = strdup(variable);  // safer memory handling
+                if (!export_var) {
+                    perror("Error allocating memory for export variable");
+                    free(variable);
+                    free(value);
+                    *last_exit_status = 1;
+                    return;
+                }
+                update_export(export, export_var, last_exit_status);
+            }
+        }
+        i++;
+    }
 }

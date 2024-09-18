@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_related_utils.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/18 21:31:26 by mrhelmy           #+#    #+#             */
-/*   Updated: 2024/09/17 18:48:41 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 20:44:44 by thelmy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,19 +91,19 @@ t_env	*create_env_nodes(char *variable_content, char *value_content)
 	return (list);
 }
 
-t_env *create_envir(char *variable_content, char *value_content, char **ev)
-{
-    t_env *list;
+//t_env *create_envir(char *variable_content, char *value_content, char **ev)
+//{
+//    t_env *list;
 
-    list = malloc(sizeof(t_env));
-    if (!list)
-        return (NULL);
-    list->variable = variable_content;
-    list->value = value_content;
-    list->next = NULL;
-    list->ev = ev;
-    return (list);
-}
+//    list = malloc(sizeof(t_env));
+//    if (!list)
+//        return (NULL);
+//    list->variable = variable_content;
+//    list->value = value_content;
+//    list->next = NULL;
+//    list->ev = ev;
+//    return (list);
+//}
 
 t_env	*storing_env(char **ev)
 {
@@ -114,8 +114,8 @@ t_env	*storing_env(char **ev)
 
 	if (!ev || !ev[0])
 		return (NULL);
-	env = create_envir(substr_before_char(ev[0], '='),
-			substr_after_char(ev[0], '='), ev);
+	env = create_env_nodes(substr_before_char(ev[0], '='),
+			substr_after_char(ev[0], '='));
 	if (!env)
 		return (NULL);
 	newnode = NULL;
@@ -123,8 +123,8 @@ t_env	*storing_env(char **ev)
 	i = 1;
 	while (ev[i])
 	{
-		newnode = create_envir(substr_before_char(ev[i], '='),
-				substr_after_char(ev[i], '='), ev);
+		newnode = create_env_nodes(substr_before_char(ev[i], '='),
+				substr_after_char(ev[i], '='));
 		if (!newnode)
 			return (free_env(env), NULL);
 		tmp ->next = newnode;

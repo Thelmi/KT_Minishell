@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
+/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 14:58:51 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 15:56:45 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/18 20:59:58 by thelmy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ t_export			*create_export_nodes(char *variable_content,
 						char *value_content);
 
 // Builtins
-void				env(t_env *env, int *last_exit_status);
+void				env_func(t_env *env, int *last_exit_status);
 void				pwd(int *last_exit_status);
 void				cd(char **args, t_env **envir, int *last_exit_status);
 void				echo(char **command);

@@ -3,17 +3,17 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+         #
+#    By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/22 14:53:08 by krazikho          #+#    #+#              #
-#    Updated: 2024/09/17 21:10:51 by krazikho         ###   ########.fr        #
+#    Updated: 2024/09/18 20:47:31 by thelmy           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = minishell #changed name of the program
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -g3 -Wall -Wextra -Werror
 LDFLAGS = -L/opt/vagrant/embedded/lib/ -lreadline -I/opt/vagrant/embedded/include/readline
 
 NAME_SRCS = main.c signals.c execute/execute_command.c execute/execute_builtin.c execute/modify_args.c execute/parse_execute.c\
