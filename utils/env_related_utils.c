@@ -91,6 +91,20 @@ t_env	*create_env_nodes(char *variable_content, char *value_content)
 	return (list);
 }
 
+t_env *create_envir(char *variable_content, char *value_content, char **ev)
+{
+    t_env *list;
+
+    list = malloc(sizeof(t_env));
+    if (!list)
+        return (NULL);
+    list->variable = variable_content;
+    list->value = value_content;
+    list->next = NULL;
+    list->ev = ev;
+    return (list);
+}
+
 t_env	*storing_env(char **ev)
 {
 	t_env	*env;
@@ -100,8 +114,8 @@ t_env	*storing_env(char **ev)
 
 	if (!ev || !ev[0])
 		return (NULL);
-	env = create_env_nodes(substr_before_char(ev[0], '='),
-			substr_after_char(ev[0], '='));
+	env = create_envir(substr_before_char(ev[0], '='),
+			substr_after_char(ev[0], '='), ev);
 	if (!env || !env->variable || !env->value)
 	{
 		free_env(env);
@@ -112,8 +126,8 @@ t_env	*storing_env(char **ev)
 	i = 1;
 	while (ev[i])
 	{
-		newnode = create_env_nodes(substr_before_char(ev[i], '='),
-				substr_after_char(ev[i], '='));
+		newnode = create_envir(substr_before_char(ev[0], '='),
+			substr_after_char(ev[0], '='), ev);
 		if (!newnode || !newnode->variable || !newnode->value)
 			return (free_env(env), NULL);
 		tmp->next = newnode;
