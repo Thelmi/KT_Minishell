@@ -89,7 +89,6 @@ static void	initialize_shell(char **ev, t_env **envir, t_export **exp,
 {
 	context->last_exit_status = 0;
 	configure_terminal_behavior();
-	setup_signals(context);
 	*envir = storing_env(ev);
 	*exp = storing_export(ev);
 }
@@ -103,6 +102,7 @@ static void	command_loop(char **ev, t_env **envir, t_export **exp,
     (void)context;
 	while (1)
 	{
+		setup_signals();
 		// command = readline("minishell$ ");
         write(1, "minishell$ ", ft_strlen("minishell$ ")); //
         command = get_next_line(0); //
