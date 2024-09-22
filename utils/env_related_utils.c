@@ -47,7 +47,10 @@ char	*substr_after_char(char *str, char c)
 		len++;
 	new_str = malloc(sizeof(char) * (len + 1));
 	if (!new_str)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	len = 0;
 	while (str[i])
 		new_str[len++] = str[i++];
@@ -67,7 +70,10 @@ char	*substr_before_char(char *str, char c)
 		i++;
 	new_str = malloc(sizeof(char) * (i + 1));
 	if (!new_str)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	i = 0;
 	while (str[i] && str[i] != c)
 	{
@@ -83,8 +89,11 @@ t_env	*create_env_nodes(char *variable_content, char *value_content)
 	t_env	*list;
 
 	list = malloc(sizeof(t_env));
-	if (!list)
+	if (!list || (!variable_content && !value_content))
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	list->variable = variable_content;
 	list->value = value_content;
 	list->next = NULL;

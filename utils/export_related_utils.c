@@ -18,7 +18,10 @@ t_export	*create_export_nodes(char *variable_content, char *value_content)
 
 	list = malloc(sizeof(t_export));
 	if (!list)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	list->variable = variable_content;
 	list->value = value_content;
 	list->next = NULL;

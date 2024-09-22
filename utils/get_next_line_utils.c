@@ -93,7 +93,10 @@ char	*gnl_strjoin(char *s1, char *s2)
 	str = malloc(sizeof(char) * (enhanced_strlen(s1, 3) + enhanced_strlen(s2, 2)
 				+ 1));
 	if (!str && gnl_free_str(&s1))
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	while (s1 != NULL && s1[i] != '\0')
 	{
 		str[i] = s1[i];

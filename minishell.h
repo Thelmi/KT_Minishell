@@ -29,6 +29,13 @@
 
 # define BUFFER_SIZE 1
 
+# define EXEC 1
+# define BUILTIN 2
+# define REDIR 3
+# define PIPE 4
+# define HEREDOC 5
+# define MAXARGS 10
+
 typedef struct s_context
 {
 	int				last_exit_status;
@@ -62,7 +69,7 @@ t_export			*create_export_nodes(char *variable_content,
 void				env_func(t_env *env, int *last_exit_status);
 void				pwd(int *last_exit_status);
 void				cd(char **args, t_env **envir, int *last_exit_status);
-void				echo(char **command);
+void				echo(char **command, char echar[MAXARGS]);
 
 // export without args
 void				sort_array(t_export **export_arr, int count);
@@ -79,6 +86,7 @@ int					num_strncmp(char *s1, char *s2);
 
 // unset_practice
 void				unset_env(t_env **env, char *variable);
+void	unset_export(t_export **exp, int ac, char **av, int *last_exit_status);
 void				unset(t_env **env, int ac, char **av,
 						int *last_exit_status);
 
@@ -107,39 +115,17 @@ char				**ft_split(char const *s, char c);
 char				*getcopyenv(char *str, t_env **envir);
 int					ft_isalnum(int c);
 int					ft_num_len(int n);
-// Freeing functions
-void				free_env(t_env *env);
-char				**free_arr(char **arr);
-void				free_env_node(t_env *node);
-void				free_export(t_export *export);
 
-// execution
-t_env				*execute_builtin(t_env **envir, char **args,
-						int *last_exit_status, t_export **exp);
-void				modify_args(char **args, t_env *envir,
-						int *last_exit_status);
-bool				is_builtin(char *command);
-char				*allocate_result(char *arg, t_env *envir,
-						int *last_exit_status);
-int					handle_exit_status(char *res, int j, int *last_exit_status);
-int					handle_var_expansion(char *res, char *arg, int *i,
-						t_env *envir);
-int					handle_exit_status_len(int *last_exit_status);
-int					handle_var_len(char *arg, int *i, t_env *envir);
-
-// signals
-void				setup_signals(t_context *context);
-void				sigint_handler(int sig, siginfo_t *info, void *context);
-void				sigquit_handler(int sig, siginfo_t *info, void *context);
-void				configure_terminal_behavior(void);
+// Random utils
+int	env_path(t_env *env, int *last_exit_status);
 
 //////parse & execute
-# define EXEC 1
-# define BUILTIN 2
-# define REDIR 3
-# define PIPE 4
-# define HEREDOC 5
-# define MAXARGS 10
+// # define EXEC 1
+// # define BUILTIN 2
+// # define REDIR 3
+// # define PIPE 4
+// # define HEREDOC 5
+// # define MAXARGS 10
 
 typedef struct cmd
 {
@@ -151,6 +137,7 @@ typedef struct execcmd
 	int				type;
 	char			*argv[MAXARGS];
 	char			*eargv[MAXARGS];
+	char			echar[MAXARGS];
 }t_execcmd;
 
 typedef struct heredoc
@@ -181,7 +168,9 @@ typedef struct pipecmd
 typedef struct main
 {
 	struct cmd		*cmd;
+	struct cmd		*main_cmd;
 	struct heredoc	*heredoc;
+	char			*command;
 }					t_main;
 
 // Main
@@ -208,6 +197,28 @@ struct cmd			*redircmd(struct cmd *subcmd, char *file, char *efile,
 						int mode, int fd);
 void				redircmd_h(char *argv, char *eargv,
 						struct heredoc **heredoc);
+struct cmd* expand_tree(struct cmd *cmd, t_env *envir, int *last_exit_status);
+
+
+// execution
+t_env				*execute_builtin(t_env **envir, char **args, char echar[MAXARGS],
+						int *last_exit_status, t_export **exp);
+void				modify_args(char **args, t_env *envir,
+						int *last_exit_status);
+bool				is_builtin(char *command);
+char				*allocate_result(char *arg, t_env *envir,
+						int *last_exit_status);
+int					handle_exit_status(char *res, int j, int *last_exit_status);
+int					handle_var_expansion(char *res, char *arg, int *i,
+						t_env *envir);
+int					handle_exit_status_len(int *last_exit_status);
+int					handle_var_len(char *arg, int *i, t_env *envir);
+
+// signals
+void				setup_signals(t_context *context);
+void				sigint_handler(int sig, siginfo_t *info, void *context);
+void				sigquit_handler(int sig, siginfo_t *info, void *context);
+void				configure_terminal_behavior(void);
 
 // get next line
 char				*ft_strcat(char *dest, const char *src);
@@ -218,8 +229,9 @@ struct cmd			*print_tree(struct cmd *cmd);
 
 // void	*ft_memmove(void *dst, const void *src, size_t len);
 struct cmd			*remove_quotes(struct cmd *cmd);
-void				update_export(t_export **export, char *variable,
-						int *last_exit_status);
+// void				update_export(t_export **export, char *variable,
+// 						int *last_exit_status);
+void				update_export(t_export **export, char *variable, char *value, int *last_exit_status);
 char				*get_next_line(int fd);
 char				*gnl_strchr(const char *s, int c);
 void				*gnl_memmove(void *dst, const void *src, size_t len);
@@ -230,5 +242,15 @@ void				builtin_exit(char **args, int *last_exit_status);
 
 // rl_replace_line
 void				rl_replace_line(const char *text, int clear_undo);
+
+// Freeing functions
+void				free_env(t_env *env);
+void free_exp_node(t_export *node);
+char				**free_arr(char **arr);
+void				free_env_node(t_env *node);
+void				free_export(t_export *export);
+void				freecmd(struct cmd *cmd, int x);
+void				freeheredoc(struct heredoc *heredoc);
+void				free_double_pointer(char **str);
 
 #endif

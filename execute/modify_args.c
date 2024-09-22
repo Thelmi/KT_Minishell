@@ -64,7 +64,10 @@ static char	*single_quotes(char *arg)
 	len = ft_strlen(arg);
 	res = malloc(sizeof(char) * (len + 1 - 2));
 	if (!res)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	while (i < len - 2)
 	{
 		res[i] = arg[i + 1];
@@ -98,4 +101,30 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 		args[i] = tmp;
 		i++;
 	}
+}
+
+struct cmd* expand_tree(struct cmd *cmd, t_env *envir, int *last_exit_status)
+{
+  struct execcmd *ecmd;
+  struct pipecmd *pcmd;
+  struct redircmd *rcmd;
+
+  if (cmd == 0)
+    return 0;
+  if (cmd->type == EXEC)
+  {
+    ecmd = (struct execcmd*)cmd;
+    modify_args(ecmd->argv, envir, last_exit_status);
+  }
+  else if (cmd->type == REDIR) {
+    rcmd = (struct redircmd*)cmd;
+    expand_tree(rcmd->cmd, envir, last_exit_status);
+  }
+  else if (cmd->type == PIPE)
+  {
+    pcmd = (struct pipecmd*)cmd;
+    expand_tree(pcmd->left, envir, last_exit_status);
+    expand_tree(pcmd->right, envir, last_exit_status);
+  }
+  return cmd;
 }

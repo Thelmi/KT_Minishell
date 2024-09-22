@@ -70,7 +70,10 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		return (NULL);
 	tab = (char *)malloc(sizeof(*tab) * (ft_strlen(s1) + ft_strlen(s2)) + 1);
 	if (tab == 0)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	while (s1[i])
 	{
 		tab[i] = s1[i];

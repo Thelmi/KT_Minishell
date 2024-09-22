@@ -58,6 +58,11 @@ char	*ft_strdup(const char *s1)
 
 	i = ft_strlen(s1) + 1;
 	s2 = malloc(sizeof(char) * i);
+	if (!s2)
+	{
+		perror("malloc");
+		return (NULL);
+	}
 	ft_strlcpy(s2, s1, i);
 	return (s2);
 }
@@ -72,14 +77,20 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 	{
 		str = malloc((sizeof(char) * (ft_strlen(s) - start + 1)));
 		if (!str)
+		{
+			perror("malloc");
 			return (NULL);
+		}
 		ft_strlcpy(str, s + start, ft_strlen(s) - start + 1);
 	}
 	else
 	{
 		str = malloc((sizeof(char) * len + 1));
 		if (!str)
+		{
+			perror("malloc");
 			return (NULL);
+		}
 		ft_strlcpy(str, s + start, len + 1);
 	}
 	return (str);
@@ -95,6 +106,9 @@ char	**ft_split(char const *s, char c)
 	word = wordcount((char *)s, c);
 	arr = malloc(sizeof(char *) * (word + 1));
 	if (!arr)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	return (getwords(arr, (char *)s, c, word));
 }

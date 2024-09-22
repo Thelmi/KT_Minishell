@@ -12,6 +12,31 @@
 
 #include "../minishell.h"
 
+int	env_path(t_env *env, int *last_exit_status)
+{
+	t_env	*tmp;
+	// int		found_path = 0;
+
+	if (!env)
+	{
+		write(2, "Environment is empty or not initialized.\n", 41);
+		*last_exit_status = 1;
+		return (0);
+	}
+	tmp = env;
+	while (tmp != NULL)
+	{
+		if (num_strncmp(tmp->variable, "PATH") == 0)
+		{
+			// found_path = 1;
+			// break ;
+			return (1);
+		}
+		tmp = tmp->next;
+	}
+	return (0);
+}
+
 void	env_func(t_env *env, int *last_exit_status)
 {
 	t_env	*tmp;

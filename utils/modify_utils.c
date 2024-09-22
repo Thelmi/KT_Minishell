@@ -45,7 +45,10 @@ char	*allocate_result(char *arg, t_env *envir, int *last_exit_status)
 
 	res = malloc(sizeof(char) * (new_len(arg, envir, last_exit_status) + 1));
 	if (!res)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	return (res);
 }
 

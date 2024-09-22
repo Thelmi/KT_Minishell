@@ -12,11 +12,11 @@
 
 #include "../minishell.h"
 
-void	echo(char **command)
+void	echo(char **command, char echar[MAXARGS])
 {
 	bool	n_flag;
 	int	i;
-
+// (void)echar;
 	n_flag = false;
 	i = 1;
 	while (command[i] && command[i][0] == '-' && is_only_n(command[i] + 1))
@@ -27,7 +27,7 @@ void	echo(char **command)
 	while (command[i])
 	{
 		printf("%s", command[i]);
-		if (command[i + 1])
+		if (command[i + 1] && echar[i] == ' ')
 			printf(" ");
 		i++;
 	}

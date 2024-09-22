@@ -36,33 +36,48 @@ void	update_env(t_env **env, char *variable, char *value,
 {
 	t_env	*tmp;
 	t_env	*new_node;
+	// char	*tmp2 = NULL;
+	// char	*tmp3 = NULL;
 
 	tmp = *env;
+	// printf("%s\n", variable);
+	// printf("%d\n", value[0]);
 	while (tmp != NULL)
 	{
 		if (num_strncmp(tmp->variable, variable) == 0)
 		{
-			free(tmp->value);
+			// tmp2 = tmp->variable;
+			// tmp3 = tmp->value;
+			if (tmp->value)
+				free(tmp->value);
+			tmp->value = NULL;
+			if (tmp->variable)
+				free(tmp->variable);
+			tmp->variable = variable;
 			if (value != NULL)
 			{
+				// printf("xox\n");
+				// tmp->value = ft_strdup(value);
 				tmp->value = value;
 			}
 			else
 			{
-				tmp->value = malloc(1);
-				if (tmp->value == NULL)
+				tmp->value = malloc(1); //why not giving it NULL?
+				// value = NULL;
+				if (tmp->value == NULL) //do we need this if?
 				{
 					perror("Error allocating memory for empty value");
 					*last_exit_status = 1;
 					return ;
 				}
+				// tmp->value = ft_strdup("");
 				tmp->value[0] = '\0';
 			}
-			free(variable);
 			return ;
 		}
 		tmp = tmp->next;
 	}
+		// printf("XXX |%s|\n", value);
 	if (value == NULL)
 	{
 		value = strdup("");
@@ -75,6 +90,7 @@ void	update_env(t_env **env, char *variable, char *value,
 		}
 	}
 	new_node = create_env_nodes(variable, value);
+	new_node->ev = (*env)->ev;
 	if (new_node != NULL)
 	{
 		new_node->next = *env;
@@ -87,9 +103,13 @@ void	update_env(t_env **env, char *variable, char *value,
 		free(value);
 		*last_exit_status = 1;
 	}
+	// if (tmp2)
+	// 	free(tmp2);
+	// if (tmp3)
+	// 	free(tmp3);
 }
 
-void	update_export(t_export **export, char *variable, int *last_exit_status)
+void	update_export(t_export **export, char *variable, char *value, int *last_exit_status)
 {
 	t_export	*tmp;
 	t_export	*new_node;
@@ -100,11 +120,16 @@ void	update_export(t_export **export, char *variable, int *last_exit_status)
 		if (num_strncmp(tmp->variable, variable) == 0)
 		{
 			free(variable);
+			if (tmp->value)
+				free(tmp->value);
+			tmp->value = value;
 			return ;
 		}
 		tmp = tmp->next;
 	}
-	new_node = create_export_nodes(variable, NULL);
+	// printf("xxx |%s|\n", variable);
+	// printf("xxx |%s|\n", value);
+	new_node = create_export_nodes(variable, value);
 	if (new_node != NULL)
 	{
 		new_node->next = *export;
@@ -195,9 +220,11 @@ void export_with_args(t_env **env, t_export **export, int ac, char **av, int *la
     char *variable;
     char *value;
     char *export_var;
+	char *export_val;
 
     while (i < ac) {
-        if (strchr(av[i], '=') == NULL) {
+        if (strchr(av[i], '=') == NULL)
+		{
             if (!is_valid_identifier(av[i])) {
                 fprintf(stderr, "export: %s: not a valid identifier\n", av[i]);
                 *last_exit_status = 1;
@@ -210,9 +237,15 @@ void export_with_args(t_env **env, t_export **export, int ac, char **av, int *la
                 *last_exit_status = 1;
                 return;
             }
-            update_export(export, variable, last_exit_status);
-        } else {
+            update_export(export, variable, NULL, last_exit_status);
+        }
+		else
+		{
+			// if (variable)
+			// 	free(variable);
             variable = substr_before_char(av[i], '=');
+			// if (value)
+			// 	free(value);
             value = substr_after_char(av[i], '=');
 
             if (variable == NULL || !*variable || !is_valid_identifier(variable)) {
@@ -222,10 +255,14 @@ void export_with_args(t_env **env, t_export **export, int ac, char **av, int *la
                 free(variable);
                 free(value);
                 *last_exit_status = 1;
-            } else {
+            }
+			else
+			{
                 update_env(env, variable, value, last_exit_status);
-
-                export_var = strdup(variable);  // safer memory handling
+				if (variable)
+                	export_var = strdup(variable);  // safer memory handling
+				else
+					export_var = NULL;
                 if (!export_var) {
                     perror("Error allocating memory for export variable");
                     free(variable);
@@ -233,8 +270,16 @@ void export_with_args(t_env **env, t_export **export, int ac, char **av, int *la
                     *last_exit_status = 1;
                     return;
                 }
-                update_export(export, export_var, last_exit_status);
+				// printf("updaaaate\n");
+				export_val = ft_strdup(value);
+                update_export(export, export_var, export_val, last_exit_status);
+				// printf("|%s|\n", value);
+				// if (value)
+				// 	free(value);
+				value = NULL;
             }
+			// if(variable)
+			// 	free(variable);
         }
         i++;
     }

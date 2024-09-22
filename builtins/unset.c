@@ -12,6 +12,36 @@
 
 #include "../minishell.h"
 
+void	unset_exp(t_export **exp, char *variable)
+{
+	t_export	*tmp;
+	t_export	*to_remove;
+
+	if (!exp || !variable)
+		return ;
+	tmp = *exp;
+	if (tmp != NULL && ft_strcmp(tmp->variable, variable) == true)
+	{
+		*exp = tmp->next;
+		if (tmp)
+			free_exp_node(tmp);
+		tmp = NULL;
+		return ;
+	}
+	while (tmp != NULL && tmp->next != NULL)
+	{
+		if (num_strncmp(tmp->next->variable, variable) == 0)
+		{
+			to_remove = tmp->next;
+			tmp->next = tmp->next->next;
+			free_exp_node(to_remove);
+			to_remove = NULL;
+			return ;
+		}
+		tmp = tmp->next;
+	}
+}
+
 void	unset_env(t_env **env, char *variable)
 {
 	t_env	*tmp;
@@ -23,7 +53,9 @@ void	unset_env(t_env **env, char *variable)
 	if (tmp != NULL && ft_strcmp(tmp->variable, variable) == true)
 	{
 		*env = tmp->next;
-		free_env_node(tmp);
+		if (tmp)
+			free_env_node(tmp);
+		tmp = NULL;
 		return ;
 	}
 	while (tmp != NULL && tmp->next != NULL)
@@ -33,9 +65,32 @@ void	unset_env(t_env **env, char *variable)
 			to_remove = tmp->next;
 			tmp->next = tmp->next->next;
 			free_env_node(to_remove);
+			to_remove = NULL;
 			return ;
 		}
 		tmp = tmp->next;
+	}
+}
+
+void	unset_export(t_export **exp, int ac, char **av, int *last_exit_status)
+{
+	int		i;
+	char	*variable;
+
+	i = 1;
+	while (i < ac)
+	{
+		variable = av[i];
+		if (variable == NULL || *variable == '\0')
+		{
+			write(2, "unset: Invalid argument: ", 25);
+			write(2, av[i], strlen(av[i]));
+			write(2, "\n", 1);
+			*last_exit_status = 1;
+		}
+		else
+			unset_exp(exp, variable);
+		i++;
 	}
 }
 

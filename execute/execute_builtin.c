@@ -22,7 +22,7 @@ static int	count_args(char **args)
 	return (count);
 }
 
-static void	execute_command(char **args, t_env **envir, int *last_exit_status,
+static void	execute_command(char **args, t_env **envir, char echar[MAXARGS], int *last_exit_status,
 		t_export **exp)
 {
 	int	count;
@@ -30,7 +30,7 @@ static void	execute_command(char **args, t_env **envir, int *last_exit_status,
 	count = count_args(args);
 	if (ft_strcmp("echo", args[0]) == true)
 	{
-		echo(args);
+		echo(args, echar);
 	}
 	else if (ft_strcmp("cd", args[0]) == true)
 	{
@@ -54,17 +54,20 @@ static void	execute_command(char **args, t_env **envir, int *last_exit_status,
 	*last_exit_status = 0;
 }
 
-t_env	*execute_builtin(t_env **envir, char **args, int *last_exit_status,
+t_env	*execute_builtin(t_env **envir, char **args, char echar[MAXARGS], int *last_exit_status,
 		t_export **exp)
 {
 	if (!args || !args[0])
 		return (*envir);
 	modify_args(args, *envir, last_exit_status);
-	execute_command(args, envir, last_exit_status, exp);
+	execute_command(args, envir, echar, last_exit_status, exp);
 	if (ft_strcmp("unset", args[0]) == true)
 	{
 		if (args[1] != NULL)
+		{
 			unset(envir, count_args(args), args, last_exit_status);
+			unset_export(exp, count_args(args), args, last_exit_status);
+		}
 		*last_exit_status = 0;
 	}
 	else if (ft_strcmp("env", args[0]) == true)

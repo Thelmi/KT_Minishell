@@ -13,7 +13,7 @@
 NAME = minishell #changed name of the program
 
 CC = cc
-CFLAGS = -g3 -Wall -Wextra -Werror
+CFLAGS = -g3 -Wall -Wextra -Werror #-fsanitize=address 
 LDFLAGS = -L/opt/vagrant/embedded/lib/ -lreadline -I/opt/vagrant/embedded/include/readline
 
 NAME_SRCS = main.c signals.c execute/execute_command.c execute/execute_builtin.c execute/modify_args.c execute/parse_execute.c\

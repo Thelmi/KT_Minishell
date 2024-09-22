@@ -31,18 +31,6 @@ static char *concat_var_value(const char *variable, const char *value) {
     return result;
 }
 
-void fill_env(t_env **env, char **ev)
-{
-    t_env *tmp;
-
-    tmp = *(env);
-    while (tmp)
-    {
-        tmp->ev = ev;
-        tmp = tmp->next;
-    }
-}
-
 static char **convert_env(t_env **env) {
     int count = 0;
     t_env *temp = *env;  // Dereference double pointer
@@ -98,38 +86,21 @@ static void	command_loop(char **ev, t_env **envir, t_export **exp,
 		t_context *context)
 {
 	char	*command;
-	(void)convert_env; //remove any (void)
-    (void)ev;
-    (void)context;
+	(void)convert_env;
 	while (1)
 	{
-		// command = readline("minishell$ ");
-        write(1, "minishell$ ", ft_strlen("minishell$ ")); //
-        command = get_next_line(0); //
+		command = readline("minishell$ ");
 		if (command == NULL)
 		{
 			write(1, "exit\n", 5);
 			break ;
 		}
-        char *tmp;//
-        tmp = ft_substr(command, 0, ft_strlen(command) - 1);//
-        free (command);//
-        command = tmp;//
 		if (*command)
 		{
+			add_history(command);
 			(*envir)->ev = convert_env(envir);
-            fill_env(envir, (*envir)->ev);
-			// add_history(command);
-            t_main x = parsecmd(command, &context->last_exit_status);//
-            x.command = command;
-            // x.cmd = expand_tree(x.cmd, *envir, &context->last_exit_status);
-            runcmd(x, ev, envir, exp, &context->last_exit_status);
-            if (x.cmd)
-                freecmd(x.cmd, 0);
-            if (envir && *envir && (*envir)->ev)
-                free_double_pointer((*envir)->ev);
-			// runcmd(parsecmd(command, &context->last_exit_status), ev, envir,
-			// 	exp, &context->last_exit_status);
+			runcmd(parsecmd(command, &context->last_exit_status), ev, envir,
+				exp, &context->last_exit_status);
 		}
 		free(command);
 	}

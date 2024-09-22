@@ -29,7 +29,10 @@ char	*ft_itoa(int n)
 	len = ft_num_len(n);
 	str = (char *)malloc(sizeof(char) * (len + 1));
 	if (!str)
+	{
+		perror("malloc");
 		return (NULL);
+	}
 	str[len--] = '\0';
 	if (num == 0)
 		str[0] = '0';
