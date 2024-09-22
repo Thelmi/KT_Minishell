@@ -26,7 +26,7 @@ void	sigint_handler(int sig, siginfo_t *info, void *context)
 	ctx->last_exit_status = 130;
 }
 
-void	setup_signals(t_context *context)
+void	setup_signals()
 {
 	struct sigaction	sa_int;
 
