@@ -215,9 +215,8 @@ int					handle_exit_status_len(int *last_exit_status);
 int					handle_var_len(char *arg, int *i, t_env *envir);
 
 // signals
-void				setup_signals(t_context *context);
+void				setup_signals();
 void				sigint_handler(int sig, siginfo_t *info, void *context);
-void				sigquit_handler(int sig, siginfo_t *info, void *context);
 void				configure_terminal_behavior(void);
 
 // get next line
