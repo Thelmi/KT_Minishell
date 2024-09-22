@@ -211,10 +211,14 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       free (input);
     }
     input = NULL;
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGINT, SIG_IGN);
     if (fork() == 0)
     {
       // write(1, main.command, ft_strlen(main.command));
       // free(main.command);
+      signal(SIGQUIT, SIG_DFL);
+      signal(SIGINT, SIG_DFL);
       remove_quotes(cmd);
       // printf("%s\n",ecmd->argv[0]);
       // if (execve(ecmd->argv[0], ecmd->argv, ev) == -1)
@@ -247,7 +251,26 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
     else 
     {
       wait(&status);
-      *last_exit_status = WEXITSTATUS(status);
+     if (WIFSIGNALED(status))
+    {
+        int sig = WTERMSIG(status);
+        // else 
+        if (sig == SIGINT)
+        {
+            write(1, "^C\n", 4);  // Handle Ctrl+C in parent
+            // *last_exit_status = 130; // Exit status for Ctrl+C
+        }
+        else if (sig == SIGQUIT)
+        {
+            write(1, "^\\Quit: 3\n", 11);  // Handle Ctrl+\ in parent
+            // *last_exit_status = 131;  // Exit status for Ctrl+
+        } 
+    }
+    else
+    {
+        // *last_exit_status = WIFSIGNALED(status);
+	    return;
+    }
       close (saved_stdout);
       close (saved_stdin);
       
