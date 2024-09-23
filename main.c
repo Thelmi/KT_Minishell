@@ -89,6 +89,7 @@ static void	initialize_shell(char **ev, t_env **envir, t_export **exp,
 {
 	context->last_exit_status = 0;
 	configure_terminal_behavior();
+	setup_signals(context);
 	*envir = storing_env(ev);
 	*exp = storing_export(ev);
 }
@@ -102,7 +103,6 @@ static void	command_loop(char **ev, t_env **envir, t_export **exp,
     (void)context;
 	while (1)
 	{
-		setup_signals();
 		// command = readline("minishell$ ");
         write(1, "minishell$ ", ft_strlen("minishell$ ")); //
         command = get_next_line(0); //
@@ -120,10 +120,11 @@ static void	command_loop(char **ev, t_env **envir, t_export **exp,
 			(*envir)->ev = convert_env(envir);
             fill_env(envir, (*envir)->ev);
 			// add_history(command);
-            t_main x = parsecmd(command, &context->last_exit_status);//
+            t_main x = parsecmd(command, *envir, &context->last_exit_status);//
             x.command = command;
-            // x.cmd = expand_tree(x.cmd, *envir, &context->last_exit_status);
-            runcmd(x, ev, envir, exp, &context->last_exit_status);
+            // expand_tree(x.cmd, *envir, &context->last_exit_status);
+            if (x.cmd)
+                runcmd(x, ev, envir, exp, &context->last_exit_status);
             if (x.cmd)
                 freecmd(x.cmd, 0);
             if (envir && *envir && (*envir)->ev)

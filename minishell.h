@@ -138,6 +138,7 @@ typedef struct execcmd
 	char			*argv[MAXARGS];
 	char			*eargv[MAXARGS];
 	char			echar[MAXARGS];
+	int				cat_flag;
 }t_execcmd;
 
 typedef struct heredoc
@@ -182,7 +183,8 @@ void				panic(char *s);
 // Parsing
 struct cmd			*parsepipe(char **ps, char *es, struct heredoc **heredoc,
 						int *last_exit_status);
-t_main				parsecmd(char *s, int *last_exit_status);
+// t_main				parsecmd(char *s, int *last_exit_status);
+t_main parsecmd(char *s, t_env *envir, int *last_exit_status);
 struct cmd			*parseexec(char **ps, char *es, struct heredoc **heredoc,
 						int *last_exit_status);
 
@@ -191,7 +193,8 @@ struct cmd			*parseredirs(struct cmd *cmd, char **ps, char *es,
 						struct heredoc **heredoc, int *last_exit_status);
 int					gettoken(char **ps, char *es, char **q, char **eq);
 struct cmd			*pipecmd(struct cmd *left, struct cmd *right);
-struct cmd			*nulterminate(struct cmd *cmd);
+// struct cmd			*nulterminate(struct cmd *cmd);
+struct cmd* nulterminate(struct cmd *cmd, t_env *envir, int *last_exit_status);
 struct cmd			*execcmd(void);
 struct cmd			*redircmd(struct cmd *subcmd, char *file, char *efile,
 						int mode, int fd);
@@ -215,8 +218,9 @@ int					handle_exit_status_len(int *last_exit_status);
 int					handle_var_len(char *arg, int *i, t_env *envir);
 
 // signals
-void				setup_signals();
+void				setup_signals(t_context *context);
 void				sigint_handler(int sig, siginfo_t *info, void *context);
+void				sigquit_handler(int sig, siginfo_t *info, void *context);
 void				configure_terminal_behavior(void);
 
 // get next line

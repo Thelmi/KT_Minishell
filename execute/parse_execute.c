@@ -26,15 +26,11 @@ char	*find_path(char *cmd, char **envp)
 	int		i;
 	char	*part_path;
 
-  // write(1, "zzPATHzz\n", ft_strlen("zzPATHzz\n"));
 	i = 0;
-  // printf("1hi ");
 	while (ft_strnstr(envp[i], "PATH", 4) == 0)
 	{
-    // printf("2hi ");
     i++;
   }
-  // printf("3hi ");
   if (!envp)
     return (NULL);
 	paths = ft_split(envp[i] + 5, ':');
@@ -47,7 +43,6 @@ char	*find_path(char *cmd, char **envp)
 		if (access(path, F_OK) == 0)
 		{
 			free_arr(paths);
-      // write(1, "ooPATHoo\n", ft_strlen("ooPATHoo\n"));
 			return (path);
 		}
 		free(path);
@@ -57,20 +52,15 @@ char	*find_path(char *cmd, char **envp)
 	while (paths[++i])
 		free(paths[i]);
 	free(paths);
-  // write(1, "xxPATHxx\n", ft_strlen("xxPATHxx\n"));
 	return (NULL);
 }
 
 void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exit_status)
 {
-	
 	int p[2];
 	struct pipecmd *pcmd;
-	// int pipe_fd;
   struct execcmd *ecmd;
 	struct redircmd *rcmd;
-	int saved_stdin = dup(STDIN_FILENO); //close all fds
-	int saved_stdout = dup(STDOUT_FILENO);
   char *tmp;
 	int status = 0;
   char *tmp3;
@@ -79,22 +69,21 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
   int i;
   char *tmp_input;
   char *tmp_input2;
-  static char *input;
+  static char *input = 0;
   t_heredoc *tmp_h;
+  static int cat_counter = 0;
+  static int stop_cat = 0;
+  static int has_heredoc = 0;
+  int saved_stdin;
+   int saved_stdout;
 
   struct cmd *cmd = main.cmd;
-  // struct cmd *tmp_main;
   if (cmd == NULL)
     return;
-  // (void)ev;
-  // (void)envir;
-  // (void)exp;
+
+  saved_stdin = dup(STDIN_FILENO); //close all fds
+	saved_stdout = dup(STDOUT_FILENO);
   
-  // free(main.command);
-  if (!input)
-  {
-    input = NULL;
-  }
   while (main.heredoc)
   {
     i = 0;
@@ -115,15 +104,13 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       free (tmp2);
       tmp2 = tmp3; // my bro
     } 
-    // printf("first tmp2 |%s|\n", tmp2);
     if (tmp2 == NULL) 
     {
           perror("Error allocating memory for heredoc delimiter");
           *last_exit_status = 1; // General error
           return ;
     }
-    // while ((read = readline("> ")) != NULL) {
-
+      has_heredoc = 1;
     while (1)
     {
       write (1, "> ", 2);
@@ -133,10 +120,7 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       read = tmp_input;
       if (read == NULL)
         break ;
-      // printf("read |%s|\n", read);
-      // printf("tmp2 |%s|\n", tmp2);
       if (num_strncmp(read, tmp2) == 0) {
-          // printf("YES\n");
           free(read);
           read = NULL;
           break;
@@ -156,26 +140,29 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       }
       free(read);
     }
-    // if (read == NULL)  //check if this is important
-    // {
-    //   free(tmp2);
-    //   break;
-    // }
     free(tmp2);
     tmp_h = main.heredoc;
     main.heredoc = main.heredoc->next;
     free(tmp_h);
     tmp_h = NULL;
   }
-  // freecmd(main.cmd, 0);
-  freeheredoc(main.heredoc); //this was after freeing heredoc
-
-
+  freeheredoc(main.heredoc);
 	if (cmd->type == EXEC) 
 	{
     close (saved_stdout);
     close (saved_stdin);
 		ecmd = (struct execcmd*)cmd;
+    if (!ecmd->argv[0])
+    {
+      if (input)
+        free (input);
+      input = NULL;
+      return ;
+    }
+    if (!ft_strcmp(ecmd->argv[0], "cat") || (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1]))
+    {
+      stop_cat = 1;
+    }
 		if (ecmd->argv[0] == NULL)
 		{
 			*last_exit_status = 1;
@@ -186,126 +173,90 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 		}
     if (is_builtin(ecmd->argv[0])==true) //free as a builtin, only the execcmd
     {
-      // printf("%s\n", ecmd->argv[0]);
-      // printf("%s\n", ecmd->argv[1]);
       if (input)
       {
         free (input);
       }
       input = NULL;
       execute_builtin(envir , ecmd->argv, ecmd->echar, last_exit_status, exp);
-      // free(ecmd->argv[1]);
-      // freecmd(main.cmd, 0);
       return ;
     }
-    if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && input)
-    {
-      write (1, input, ft_strlen(input));
-      if (input)
-        free (input);
-      input = NULL;
-      return ;
-    }
-    if (input)
-    {
-      free (input);
-    }
-    input = NULL;
-    signal(SIGQUIT, SIG_IGN);
-    signal(SIGINT, SIG_IGN);
     if (fork() == 0)
     {
-      // write(1, main.command, ft_strlen(main.command));
-      // free(main.command);
-      signal(SIGQUIT, SIG_DFL);
-      signal(SIGINT, SIG_DFL);
+      if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && has_heredoc) //&& !ecmd->cat_flag 
+      {
+        write (1, input, ft_strlen(input));
+        if (input)
+          free (input);
+        input = NULL;
+        has_heredoc = 0;
+
+        free(main.command);//
+        freecmd(main.cmd, 0);
+        free_double_pointer((*envir)->ev);
+        free_env(*envir);
+        free_export(*exp);
+        exit(0); // leaks?
+      }
       remove_quotes(cmd);
-      // printf("%s\n",ecmd->argv[0]);
-      // if (execve(ecmd->argv[0], ecmd->argv, ev) == -1)
-      //   execve(find_path(ecmd->argv[0], ev), ecmd->argv, ev); //you should free properly, make sure strjoin is not leaking
-      // printf("1XoXoX\n");
       if (env_path(*envir, last_exit_status) || strchr(ecmd->argv[0], '/'))
       {
         if (execve(ecmd->argv[0], ecmd->argv, (*envir)->ev) == -1)
         {
-          // printf("3XoXoX\n");
-          // printf("|%s|\n", find_path(ecmd->argv[0], (*envir)->ev));
-          // fflush(0);
-          execve(find_path(ecmd->argv[0], (*envir)->ev), ecmd->argv, (*envir)->ev);
+          char *path = find_path(ecmd->argv[0], (*envir)->ev);
+          if (path)
+              execve(path, ecmd->argv, (*envir)->ev);
+            free(path);
         }
       }
-      // printf("2XoXoX\n");
       *last_exit_status = 127;
+      if (input)
+        free(input);
+      input = NULL;
+      has_heredoc = 0;
       free(main.command);//
       freecmd(main.cmd, 0);
       free_double_pointer((*envir)->ev);
       free_env(*envir);
       free_export(*exp);
-      // close (saved_stdout);
-      // close (saved_stdin);
-      perror("execve failed"); // change it...
-      // freeheredoc(main.heredoc);
-      //free here if there is an error
+      perror("execve failed"); // change it...?
       exit(127);
     }
     else 
     {
       wait(&status);
-     if (WIFSIGNALED(status))
-    {
-        int sig = WTERMSIG(status);
-        // else 
-        if (sig == SIGINT)
-        {
-            write(1, "^C\n", 4);  // Handle Ctrl+C in parent
-            // *last_exit_status = 130; // Exit status for Ctrl+C
-        }
-        else if (sig == SIGQUIT)
-        {
-            write(1, "^\\Quit: 3\n", 11);  // Handle Ctrl+\ in parent
-            // *last_exit_status = 131;  // Exit status for Ctrl+
-        } 
-    }
-    else
-    {
-        // *last_exit_status = WIFSIGNALED(status);
-	    return;
-    }
+      *last_exit_status = WEXITSTATUS(status);
       close (saved_stdout);
       close (saved_stdin);
-      
-      // freecmd(main.cmd, 0);
-      // freeheredoc(main.heredoc); //freeing here - reached this point
+      if (input)
+      {
+        free (input);
+      }
+      if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && has_heredoc) //&& !ecmd->cat_flag 
+      {
+        has_heredoc = 0;
+      }
+      input = NULL;
       return ;
     }
 	} 
 	else if (cmd->type == REDIR) 
 	{
 		rcmd = (struct redircmd*)cmd;
-    tmp = NULL;
-    if (input)
-    {
-      free (input);
-    }
-    input = NULL;
+        tmp = NULL;
     if (rcmd->file && !((rcmd->file[0] == '\"' || rcmd->file[0] == '\'') && rcmd->file[1] == '\0'))
     {
       if (rcmd->file && rcmd->file[0] == '\"' && rcmd->file[ft_strlen(rcmd->file) - 1] == '\"')
         {
           tmp = ft_substr(rcmd->file, 1, ft_strlen(rcmd->file) - 2);
-          // if ()
-          // free (rcmd->file);
           rcmd->file = tmp; //we need to free the file name after using it
         } 
         if (rcmd->file && rcmd->file[0] == '\'' && rcmd->file[ft_strlen(rcmd->file) - 1] == '\'')
         {
           tmp = ft_substr(rcmd->file, 1, ft_strlen(rcmd->file) - 2);
-          // if ()
-          // free (rcmd->file);
           rcmd->file = tmp; //we need to free the file name after using it
         } 
       int fd = open(rcmd->file, rcmd->mode, 0644);
-        // printf("hi\n");
       if (tmp)
         free(tmp); //the same as free(rcmd->file);
       if (fd < 0) {
@@ -322,11 +273,15 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       close(fd);
     }
     main.cmd = rcmd->cmd;
-    close (saved_stdout);
-    close (saved_stdin);
 		runcmd(main, ev, envir, exp, last_exit_status); // WARNING!!! make sure everything is free here, this is a recursive call WARNING!!!
 		dup2(saved_stdout, 1);
 		dup2(saved_stdin, 0);
+    close (saved_stdout);
+    close (saved_stdin);
+    if (input)
+    {
+      free (input);
+    }
 		return;
 	} 
 	else if (cmd->type == PIPE) 
@@ -337,12 +292,6 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       free (input);
     }
     input = NULL;
-    if (pcmd->right->type != PIPE)
-		{
-      close (saved_stdout);
-      close (saved_stdin);
-      return ;
-    }
 		if (pipe(p) < 0)
 			panic("pipe failed");
 		ecmd = (struct execcmd*)pcmd->left;
@@ -352,79 +301,56 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 			*last_exit_status = 2;
 			return ;
 		}
-    // free(main.command);
-		if (fork1() == 0) 
-		{
-      // printf("YES\n");
-			close(p[0]);
-			if (dup2(p[1], STDOUT_FILENO) < 0)
-				panic("dup2 failed");
-			close(p[1]);
-      // tmp_main = main.cmd;
-      main.cmd = pcmd->left; //save the address correctly before modifying it for the next call. otherwise, you'll lose the pipe node and left/right orders and addressses
-      close (saved_stdout);
-      close (saved_stdin);
-			runcmd(main, ev, envir, exp, last_exit_status);
-      free(main.command);
-      free_double_pointer((*envir)->ev);
-      free_env(*envir);
-      free_export(*exp);
-      freecmd(main.main_cmd, 0);
-			exit(*last_exit_status);
-      // printf("NO\n");
-		}
+    if (ft_strcmp(ecmd->argv[0], "cat"))
+          ecmd->cat_flag = 1;
+    if (!stop_cat &&  ft_strcmp(ecmd->argv[0], "cat") && ecmd->cat_flag && !ecmd->argv[1])
+    {
+        cat_counter++;
+    }
+    int stopping_cat = 0;
+    if (!(ft_strcmp(ecmd->argv[0], "cat") && !ecmd->argv[1]))
+    {        
+      if (fork1() == 0) 
+      {
+        close(p[0]);
+        if (dup2(p[1], STDOUT_FILENO) < 0)
+          panic("dup2 failed");
+        close(p[1]);
+        main.cmd = pcmd->left; //save the address correctly before modifying it for the next call. otherwise, you'll lose the pipe node and left/right orders and addressses
+        close (saved_stdout);
+        close (saved_stdin);
+        runcmd(main, ev, envir, exp, last_exit_status);
+        free(main.command);
+        free_double_pointer((*envir)->ev);
+        free_env(*envir);
+        free_export(*exp);
+        freecmd(main.main_cmd, 0);
+        exit(*last_exit_status);
+      }
+    }
+    else
+    {
+      stopping_cat = 1;
+      if (pcmd->right->type != PIPE && ft_strcmp(((struct execcmd*)pcmd->right)->argv[0], "cat") && !(((struct execcmd*)pcmd->right)->argv[1]))
+        cat_counter = 0;
+			// {
+    }
 		wait(&status);
-    // return ;
-    // exit(0); //I am here
 		*last_exit_status = WEXITSTATUS(status);
 		if (fork1() == 0) 
 		{
 			close(p[1]);
-			if (dup2(p[0], STDIN_FILENO) < 0)
-				panic("dup2 failed");
+      if (stopping_cat != 1)
+      {
+        if (dup2(p[0], STDIN_FILENO) < 0)
+          panic("dup2 failed");
+      }
 			close(p[0]);
-			// if (pcmd->right->type != PIPE)
-			// {
-			// 	ecmd = (struct execcmd*)pcmd->right;
-			// 	if (ecmd->argv[0] == NULL)
-			// 	{
-      //     char *read = NULL;
-
-      //     pipe_fd = dup(0);
-      //     dup2(saved_stdin, 0);
-      //     while (!read)
-      //     {
-      //       write (1, "> ", 2);
-      //       read = get_next_line(0);
-      //       if (read && read[0] != '\n')
-      //       {
-      //       dup2(pipe_fd, 0);
-      //       close(pipe_fd);
-      //       break ;
-      //       }
-      //       free (read);
-      //       read = NULL;
-      //     }
-      //       freecmd(main.cmd, 0);
-      //       free(main.command);
-      //       t_main x = parsecmd(read, last_exit_status);
-      //       close (saved_stdout);
-      //       close (saved_stdin);
-      //       runcmd(x, ev, envir, exp, last_exit_status); //WARNING!!! recursive call
-      //       if (x.cmd)
-      //           freecmd(x.cmd, 0);
-      //       free(read);
-      //       read = NULL;
-      //       free_double_pointer((*envir)->ev);
-      //       free_env(*envir);
-      //       free_export(*exp);
-      //       exit(0);
-			// 	}
-			// }
-      // tmp_main = main.cmd;
       main.cmd = pcmd->right;
       close (saved_stdout);
       close (saved_stdin);
+      if (ft_strcmp(ecmd->argv[0], "cat"))
+          ecmd->cat_flag = 0;
 			runcmd(main, ev, envir, exp, last_exit_status); //WARNING!!! recursive call
       // free(tmp_main);
       free(main.command);
@@ -434,6 +360,8 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       freecmd(main.main_cmd, 0);
 			exit(*last_exit_status);
 		}
+    if (pcmd->right->type == PIPE)
+      cat_counter = 0;
 		close(p[0]);
 		close(p[1]);
 		wait(&status);
@@ -442,90 +370,90 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
 	  *last_exit_status = WEXITSTATUS(status);
 	}
  
-
-
-  // freecmd(main.cmd, 0);
-  // freeheredoc(main.heredoc);
+  char *user_string;
+  if (input)
+    free(input);
+  input = NULL;
+  while (cat_counter)
+  {
+    user_string = get_next_line(0);
+    free(user_string);
+    cat_counter--;
+  }
 	return ;
 }
 
 // Parsing 
 int gettoken(char **ps, char *es, char **q, char **eq) // add herdoc
 {
-    char *s;
-    int ret;
+  char *s;
+  int ret;
 	char whitespace[6];
 	char symbols[4];
 
 	strcpy(whitespace, " \t\r\n\v");
 	strcpy(symbols, "<|>"); 
-    s = *ps;
-    // printf("xx%s\n", s);
-    while (s < es && strchr(whitespace, *s))
-        s++;
-    if (q)
-        *q = s;
-    ret = *s;
-
-    if (*s == 0) 
-    {
-        return ret;
-    } 
-     else if (*s == '|')
-    {
-        s++;
-    }
-    else if (*s == '<') 
-    {
-        s++;
-        if (*s == '<') 
-        {
-            ret = 'h';
-            s++;
-        } 
+  s = *ps;
+  while (s < es && strchr(whitespace, *s))
+      s++;
+  if (q)
+      *q = s;
+  ret = *s;
+  if (*s == 0) 
+  {
+      return ret;
+  } 
+    else if (*s == '|')
+  {
+      s++;
+  }
+  else if (*s == '<') 
+  {
+      s++;
+      if (*s == '<') 
+      {
+          ret = 'h';
+          s++;
+      } 
 	}
-    else if (*s == '>') {
+  else if (*s == '>') {
+      s++;
+      if (*s == '>') {
+          ret = '+';
+          s++;
+      }
+  } 
+  else
+  {
+    ret = 'a';
+    while(s < es && strchr(whitespace, *s))
+      s++;
+    if (s[0] == '\"')
+    {
+      s++;
+      while(s < es && s[0] != '\"')
         s++;
-        if (*s == '>') {
-            ret = '+';
-            s++;
-        }
-    } 
-    else {
-        ret = 'a';
-        while(s < es && strchr(whitespace, *s))
-          s++;
-        // printf("x1%s\n", *ps);
-        if (s[0] == '\"')
-        {
-          s++;
-          while(s < es && s[0] != '\"')
-            s++;
-          s++;
-          // printf("%s\n", s);
-        }
-        else if (s[0] == '\'')
-        {
-          s++;
-          while(s < es && s[0] != '\'')
-            s++;
-          s++;
-        }
-        else
-        // printf("x1%s\n", s);
-        {
-          while (s < es && s[0] != '\"' && s[0] != '\'' &&!strchr(whitespace, *s) && !strchr(symbols, *s))
-            s++;
-        }
-        // printf("x2%s\n", s);
+      s++;
     }
-    // printf("|%s|\n", s);
-    if (eq)
-        *eq = s;
-    while (s < es && strchr(whitespace, *s))
+    else if (s[0] == '\'')
+    {
+      s++;
+      while(s < es && s[0] != '\'')
         s++;
-    *ps = s;
-    return ret;
+      s++;
+    }
+    else
+    {
+      while (s < es && s[0] != '\"' && s[0] != '\'' &&!strchr(whitespace, *s) && !strchr(symbols, *s))
+        s++;
+    }
+  }
+  if (eq)
+      *eq = s;
+  while (s < es && strchr(whitespace, *s))
+      s++;
+  *ps = s;
+  return ret;
 }
 
 int peek(char **ps, char *es, char *toks)
@@ -545,40 +473,27 @@ struct cmd* parseredirs(struct cmd *cmd, char **ps, char *es, struct heredoc **h
 {
   int tok;
   char *q, *eq;
-// printf("yxYES\n");
   while(peek(ps, es, "<>"))
   {
-    // printf("xYES\n"); //m
     tok = gettoken(ps, es, 0, 0);
     if(gettoken(ps, es, &q, &eq) != 'a')
     {
 		write(2, "bash: syntax error near unexpected token\n", 41);
 		*last_exit_status = 2;
-    // print_tree(cmd);
 		freecmd(cmd, 1); // Indicating a syntax error (like bash)
     cmd = NULL;
 		return (NULL);
     }
-    // if (tok == '<' && (q + 1) && (*(q + 1) != ' '))
-    // printf ("|%c|\n", *(q - 1));
-    if(tok == '<') {
-      // if (((q - 1) && (*(q - 1) != ' ') || (q + 1)(*(q + 1) != ' ')))
-      // {
-
-      // }
+    if(tok == '<'){
       cmd = redircmd(cmd, q, eq, O_RDONLY, 0);
     } else if(tok == '>') {
       cmd = redircmd(cmd, q, eq, O_WRONLY | O_CREAT | O_TRUNC, 1);
     } else if(tok == '+') {  // >>
       cmd = redircmd(cmd, q, eq, O_WRONLY | O_CREAT | O_APPEND, 1);
     } else if(tok == 'h') {  // <<
-        // printf("HELLOOO\n");
         redircmd_h(q, eq, heredoc);
-      // cmd = redircmd(cmd, q, eq, O_WRONLY | O_CREAT | O_APPEND, 1);
     }
   }
-    // printf("xHoooooh\n");
-
   return cmd;
 }
 
@@ -596,14 +511,6 @@ struct cmd* parseexec(char **ps, char *es, struct heredoc **heredoc, int *last_e
         return NULL;
     }
   cmd = (struct execcmd*)ret;
-// (void)ps;
-// (void)es;
-// (void)heredoc;
-// (void)tok;
-// (void)eq;
-// (void)argc;
-// (void)cmd;
-// (void)q;
   argc = 0;
   ret = parseredirs(ret, ps, es, heredoc, last_exit_status); 
   if (!ret)
@@ -611,31 +518,17 @@ struct cmd* parseexec(char **ps, char *es, struct heredoc **heredoc, int *last_e
   while(ret && !peek(ps, es, "|")){ // I added ret
     if((tok=gettoken(ps, es, &q, &eq)) == 0)
       break;
-    // printf("x1%s\n", *ps);
-    // printf("x1cYES\n");
     if (tok != 'a')
     {
 		*last_exit_status = 2;
         write(2, "bash: syntax error near unexpected token\n", 41);
-        // cmd->argv[argc] = 0;
-        // cmd->eargv[argc] = 0;
         freecmd(ret, 1);
-        // printf("Hoooooh\n");
         return NULL;
     }
-    // if (q == cmd->eargv[argc - 1])
-    //   q++; //here taha
     cmd->argv[argc] = q;
     cmd->eargv[argc] = eq;
-    // printf("%s\n", cmd->eargv[argc]);
     argc++;
-    //if(argc >= MAXARGS)  // do we really need this
-    //  panic("too many args");
     ret = parseredirs(ret, ps, es, heredoc, last_exit_status);
-    // if (ret)
-    //   printf("Hoooooh\n");
-
-    // printf("x2%s\n", *ps);
   }
   if (ret && cmd && cmd->argv[argc]) //&& cmd->argv
     cmd->argv[argc] = 0;
@@ -656,114 +549,40 @@ struct cmd* parsepipe(char **ps, char *es, struct heredoc **heredoc, int *last_e
   return cmd;
 }
 
-struct cmd* nulterminate(struct cmd *cmd)
+struct cmd* nulterminate(struct cmd *cmd, t_env *envir, int *last_exit_status)
 {
   int i;
-  // struct backcmd *bcmd;
   struct execcmd *ecmd;
-  // struct listcmd *lcmd;
   struct pipecmd *pcmd;
   struct redircmd *rcmd;
-  // int j = 0;
-  // char *tmp;
-  // char *tmp2;
-  // char *tmp3;
-  // int j;
 
   if (cmd == 0)
     return 0;
   if (cmd->type == EXEC) {
     ecmd = (struct execcmd*)cmd;
     i = 0;
-    // printf("|%s|\n", ecmd->argv[0]);
-    // printf("{%s}\n", ecmd->eargv[0]);
-    // printf("|%s|\n", ecmd->argv[1]);
-    // printf("{%s}\n", ecmd->eargv[1]);
-    // printf("|%s|\n", ecmd->argv[2]);
-    // printf("{%s}\n", ecmd->eargv[2]);
     while (ecmd->argv[i]) {
-      // printf("[%s]\n", ecmd->argv[i]);
-      // printf("{%s}\n", ecmd->eargv[i]);
-      // *ecmd->eargv[i] = 0;
-      // j = 0;
-      // // while (ecmd->argv[i][j] != ecmd->eargv[i])
-    //   free(ecmd->argv[i]);
       ecmd->argv[i] = ft_substr(ecmd->argv[i], 0, ecmd->eargv[i] - ecmd->argv[i]);
       ecmd->echar[i] = ecmd->eargv[i][0];
-      // printf("|%c|\n", ecmd->echar[i]);
-      // if ((ecmd->argv[i] == '\"' || ecmd->argv[i] == '\'') && ecmd->argv[i + 1] && ecmd->argv[i + 1] != ' ')
-      // {
-
-      // }
-      // printf("{%c}\n", ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i] - 1]);
-      // printf("{%c}\n", ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i]]);
-      // printf("oOOo i= %d\n", i);
-//trying to fix echo spaces
-// if (i > 0 && ecmd->argv[i + 1] && (ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i] - 1] == '\'' || ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i] - 1] == '\"')
-//   && ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i]] && ecmd->argv[i][ecmd->eargv[i] - ecmd->argv[i]] != ' ')
-// {
-//   // printf("oOOo i= %d\n", i);
-//   tmp2 = ft_substr(ecmd->argv[i] + 1, 0, ft_strlen(ecmd->argv[i]) - 2);
-//   tmp3 = ft_substr(ecmd->argv[i + 1], 0, ecmd->eargv[i + 1] - ecmd->argv[i + 1]);
-//   printf("%s\n", tmp2);
-//   tmp = ft_strjoin(tmp2, tmp3);
-//   free(tmp2);
-//   free(ecmd->argv[i]);
-//   free(tmp3);
-//   ecmd->argv[i] = tmp;
-//   j = i + 1;
-//   while (ecmd->argv[j + 1])
-//   {
-//     printf("begin %s\n", ecmd->argv[j]);
-//     printf("end %s\n", ecmd->eargv[j]);
-//     ecmd->argv[j] = ecmd->argv[j + 1];
-//     ecmd->eargv[j] = ecmd->eargv[j + 1];
-//     j++;
-//   }
-//   printf("%s\n", ecmd->argv[i - 1]);
-//   i--;
-
-// }
-
       if (ecmd->argv[i] == NULL) 
       {
         perror("ft_substr allocation failed");
         return NULL;
       }
-      // printf("{%s}\n", ecmd->argv[i]);
-      // printf("|%c|\n", ecmd->eargv[i][0]);
-      i++;
-      // printf("333\n");
-      
+      i++; 
     }
-    // printf("|%s|\n", ecmd->argv[0]);
-    // printf("{%s}\n", ecmd->eargv[0]);
-    // printf("|%s|\n", ecmd->argv[1]);
-    // printf("{%s}\n", ecmd->eargv[1]);
-    // printf("|%s|\n", ecmd->argv[2]);
-    // printf("{%s}\n", ecmd->eargv[2]);
-    // i = 0;
-    // while (ecmd->argv[i]) {
-    //   printf("{%s}\n", ecmd->argv[i]);
-    //   // *ecmd->eargv[i] = 0;
-    //   // printf("{%s}\n", ecmd->eargv[i]);
-    //   i++;
-    // }
+    modify_args(ecmd->argv, envir, last_exit_status);
   }
   else if (cmd->type == REDIR) {
     rcmd = (struct redircmd*)cmd;
-    nulterminate(rcmd->cmd);
+    nulterminate(rcmd->cmd, envir, last_exit_status);
     *rcmd->efile = 0;
-    // printf("%s\n", rcmd->file);
-    // int fd = open(rcmd->file, rcmd->mode, 0644);
-    // write(fd,"9", 1);
-    // close(fd);
   }
   else if (cmd->type == PIPE)
   {
     pcmd = (struct pipecmd*)cmd;
-    nulterminate(pcmd->left);
-    nulterminate(pcmd->right);
+    nulterminate(pcmd->left, envir, last_exit_status);
+    nulterminate(pcmd->right, envir, last_exit_status);
   }
   return cmd;
 }
@@ -771,9 +590,7 @@ struct cmd* nulterminate(struct cmd *cmd)
 struct cmd* remove_quotes(struct cmd *cmd)
 {
   int i;
-  // struct backcmd *bcmd;
   struct execcmd *ecmd;
-  // struct listcmd *lcmd;
   struct pipecmd *pcmd;
   struct redircmd *rcmd;
   char *tmp;
@@ -786,15 +603,13 @@ struct cmd* remove_quotes(struct cmd *cmd)
     while (ecmd->argv[i]) {
       if (ecmd->argv[i][0] == '\"' && ecmd->argv[i][ft_strlen(ecmd->argv[i]) - 1] == '\"')
       {
-		tmp = ecmd->argv[i];
-		ecmd->argv[i] = ft_substr(tmp, 1, ft_strlen(tmp) - 2);
-		// free(tmp);
+        tmp = ecmd->argv[i];
+        ecmd->argv[i] = ft_substr(tmp, 1, ft_strlen(tmp) - 2);
       }
       if (ecmd->argv[i][0] == '\'' && ecmd->argv[i][ft_strlen(ecmd->argv[i]) - 1] == '\'')
       {
-		tmp = ecmd->argv[i];
-		ecmd->argv[i] = ft_substr(tmp, 1, ft_strlen(tmp) - 2);
-		// free(tmp);
+        tmp = ecmd->argv[i];
+        ecmd->argv[i] = ft_substr(tmp, 1, ft_strlen(tmp) - 2);
       }
       i++;
     }
@@ -831,8 +646,8 @@ int check_quotes(char *str)
     return (1); //wrong input
   return (0); //
 }
-// struct cmd* parsecmd(char *s, int *last_exit_status)
-t_main parsecmd(char *s, int *last_exit_status)
+
+t_main parsecmd(char *s, t_env *envir, int *last_exit_status)
 {
     char *es;
     struct cmd *cmd;
@@ -857,15 +672,9 @@ t_main parsecmd(char *s, int *last_exit_status)
     	freeheredoc(main.heredoc);
 		return main; //double check this
     }
-    // free(cmd);
-    // if (cmd == NULL)
-    //   printf("WOoooooowwwwW\n");
-    // if (main.heredoc == NULL)
-      // printf("WOoooooowwwwW\n");
-    nulterminate(cmd); //free argv in the tree properly. Free argv first and then the nodes in the tree
+    nulterminate(cmd, envir, last_exit_status); //free argv in the tree properly. Free argv first and then the nodes in the tree
     main.cmd = cmd;
     main.main_cmd = cmd;
-    // main.command = s;
     return (main);
 }
 
@@ -882,14 +691,6 @@ struct cmd* pipecmd(struct cmd *left, struct cmd *right)
     return NULL;
   }
   memset(cmd, 0, sizeof(*cmd));
-  // if (left)
-  //   cmd->left_available = 1;
-  // else
-  //   cmd->left_available = 0;
-  // if (right)
-  //   cmd->right_available = 1;
-  // else
-  //   cmd->right_available = 0;
   cmd->type = PIPE;
   cmd->left = left;
   cmd->right = right;
@@ -902,7 +703,6 @@ struct cmd* redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int 
   struct cmd *tmp;
   struct redircmd *tmp2;
 
-  // printf("%s\n", file);
   cmd = malloc(sizeof(*cmd));
   if (!cmd)
   {
@@ -950,7 +750,6 @@ void redircmd_h(char *argv, char *eargv, struct heredoc **heredoc)
   cmd->eargv = eargv;
   cmd->next = NULL;
 
-// printf("%s|\n", argv);
   if (*heredoc == NULL)
   {
     // create a node, new head

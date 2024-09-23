@@ -26,16 +26,35 @@ void	sigint_handler(int sig, siginfo_t *info, void *context)
 	ctx->last_exit_status = 130;
 }
 
-void	setup_signals()
+void	sigquit_handler(int sig, siginfo_t *info, void *context)
+{
+	t_context	*ctx;
+
+	(void)sig;
+	(void)info;
+	ctx = (t_context *)context;
+	write(1, "minishell$ ", 12);
+	ctx->last_exit_status = 131;
+}
+
+void	setup_signals(t_context *context)
 {
 	struct sigaction	sa_int;
+	struct sigaction	sa_quit;
 
+	(void)context;
 	sa_int.sa_sigaction = sigint_handler;
 	sa_int.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa_int.sa_mask);
+	sa_int.sa_flags = SA_SIGINFO;
+	sa_int.sa_sigaction = sigint_handler;
 	sigaction(SIGINT, &sa_int, NULL);
-
-	signal(SIGQUIT, SIG_IGN);
+	sa_quit.sa_sigaction = sigquit_handler;
+	sa_quit.sa_flags = SA_SIGINFO;
+	sigemptyset(&sa_quit.sa_mask);
+	sa_quit.sa_flags = SA_SIGINFO;
+	sa_quit.sa_sigaction = sigquit_handler;
+	sigaction(SIGQUIT, &sa_quit, NULL);
 }
 
 void	configure_terminal_behavior(void)
