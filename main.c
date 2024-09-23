@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 14:58:22 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 21:29:44 by thelmy           ###   ########.fr       */
+/*   Updated: 2024/09/23 16:42:06 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ static void	initialize_shell(char **ev, t_env **envir, t_export **exp,
 {
 	context->last_exit_status = 0;
 	configure_terminal_behavior();
-	setup_signals(context);
+
 	*envir = storing_env(ev);
 	*exp = storing_export(ev);
 }
@@ -103,23 +103,20 @@ static void	command_loop(char **ev, t_env **envir, t_export **exp,
     (void)context;
 	while (1)
 	{
-		// command = readline("minishell$ ");
-        write(1, "minishell$ ", ft_strlen("minishell$ ")); //
-        command = get_next_line(0); //
+        setup_signals();
+		command = readline("minishell$ ");
+        // write(1, "minishell$ ", ft_strlen("minishell$ ")); //
+        // command = get_next_line(0); //
 		if (command == NULL)
 		{
 			write(1, "exit\n", 5);
 			break ;
 		}
-        char *tmp;//
-        tmp = ft_substr(command, 0, ft_strlen(command) - 1);//
-        free (command);//
-        command = tmp;//
 		if (*command)
 		{
 			(*envir)->ev = convert_env(envir);
             fill_env(envir, (*envir)->ev);
-			// add_history(command);
+			add_history(command);
             t_main x = parsecmd(command, *envir, &context->last_exit_status);//
             x.command = command;
             // expand_tree(x.cmd, *envir, &context->last_exit_status);

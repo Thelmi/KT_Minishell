@@ -6,7 +6,7 @@
 /*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/27 19:04:39 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 14:37:19 by krazikho         ###   ########.fr       */
+/*   Updated: 2024/09/23 16:47:49 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,11 +90,13 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 	int		len;
 
 	i = 0; // was i = 1
+
 	while (args[i])
 	{
 		len = ft_strlen(args[i]);
-		if (args[i][0] == '\'' && args[i][len - 1] == '\'')
+		if (args[i][0] == '\'' && args[i][len - 1] == '\''){
 			tmp = single_quotes(args[i]);
+		}
 		else if (args[i][0] == '"' && args[i][len - 1] == '"')
 		{
 			tmp = double_quotes(args[i], envir,
@@ -103,7 +105,7 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 		else
 		{
 			tmp = no_quotes(args[i], envir, last_exit_status);
-			// printf("yyy\n");
+		
 		}
 		if (args[i])
 			free(args[i]);
@@ -111,34 +113,4 @@ void	modify_args(char **args, t_env *envir, int *last_exit_status)
 		// printf("x%s\n", tmp);
 		i++;
 	}
-}
-
-struct cmd* expand_tree(struct cmd *cmd, t_env *envir, int *last_exit_status) // we are not using this fucntion. remove it from the header file
-{
-  struct execcmd *ecmd;
-  struct pipecmd *pcmd;
-  struct redircmd *rcmd;
-
-// printf("1111\n");
-  if (cmd == 0)
-    return 0;
-// printf("2222\n");
-  if (cmd->type == EXEC)
-  {
-	// printf("3333\n");
-	// fflush(0);
-    ecmd = (struct execcmd*)cmd;
-    modify_args(ecmd->argv, envir, last_exit_status);
-  }
-  else if (cmd->type == REDIR) {
-    rcmd = (struct redircmd*)cmd;
-    expand_tree(rcmd->cmd, envir, last_exit_status);
-  }
-  else if (cmd->type == PIPE)
-  {
-    pcmd = (struct pipecmd*)cmd;
-    expand_tree(pcmd->left, envir, last_exit_status);
-    expand_tree(pcmd->right, envir, last_exit_status);
-  }
-  return cmd;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/14 14:58:51 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 20:59:58 by thelmy           ###   ########.fr       */
+/*   Updated: 2024/09/23 17:46:59 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@
 # define REDIR 3
 # define PIPE 4
 # define HEREDOC 5
-# define MAXARGS 10
+# define MAXARGS 10000
 
 typedef struct s_context
 {
@@ -218,7 +218,7 @@ int					handle_exit_status_len(int *last_exit_status);
 int					handle_var_len(char *arg, int *i, t_env *envir);
 
 // signals
-void				setup_signals(t_context *context);
+void				setup_signals();
 void				sigint_handler(int sig, siginfo_t *info, void *context);
 void				sigquit_handler(int sig, siginfo_t *info, void *context);
 void				configure_terminal_behavior(void);

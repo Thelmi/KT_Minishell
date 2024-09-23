@@ -181,8 +181,12 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
       execute_builtin(envir , ecmd->argv, ecmd->echar, last_exit_status, exp);
       return ;
     }
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGINT, SIG_IGN);
     if (fork() == 0)
     {
+      signal(SIGQUIT, SIG_DFL);
+      signal(SIGINT, SIG_DFL); 
       if (ft_strcmp(ecmd->argv[0], "cat") && ecmd->argv[1] == NULL && has_heredoc) //&& !ecmd->cat_flag 
       {
         write (1, input, ft_strlen(input));
@@ -225,7 +229,24 @@ void runcmd(t_main main, char **ev, t_env **envir, t_export **exp, int *last_exi
     else 
     {
       wait(&status);
-      *last_exit_status = WEXITSTATUS(status);
+      if (WIFSIGNALED(status))
+      {
+          int sig = WTERMSIG(status);
+          if (sig == SIGINT)
+          {
+              write(1, "^C\n", 4);  // Handle Ctrl+C in parent
+              *last_exit_status = 130; // Exit status for Ctrl+C
+          }
+          else if (sig == SIGQUIT)
+          {
+              write(1, "^\\Quit: 3\n", 11);  // Handle Ctrl+\ in parent
+              *last_exit_status = 131;  // Exit status for Ctrl+
+          } 
+      }
+      else
+      {
+          *last_exit_status = 0;
+      }
       close (saved_stdout);
       close (saved_stdin);
       if (input)

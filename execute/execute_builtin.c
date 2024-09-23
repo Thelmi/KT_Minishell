@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_builtin.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: thelmy <thelmy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: krazikho <krazikho@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 14:55:09 by krazikho          #+#    #+#             */
-/*   Updated: 2024/09/18 21:12:21 by thelmy           ###   ########.fr       */
+/*   Updated: 2024/09/23 14:31:35 by krazikho         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ t_env	*execute_builtin(t_env **envir, char **args, char echar[MAXARGS], int *las
 {
 	if (!args || !args[0])
 		return (*envir);
-	modify_args(args, *envir, last_exit_status);
+	// modify_args(args, *envir, last_exit_status);
 	execute_command(args, envir, echar, last_exit_status, exp);
 	if (ft_strcmp("unset", args[0]) == true)
 	{
